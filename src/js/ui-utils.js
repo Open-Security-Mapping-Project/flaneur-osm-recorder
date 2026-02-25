@@ -18,6 +18,10 @@ export function closeModal(id) {
   document.getElementById(id)?.setAttribute('hidden', '');
 }
 
+/**
+ * Not yet used.
+ * @param id
+ */
 export function openModal(id) {
   document.getElementById(id)?.removeAttribute('hidden');
 }

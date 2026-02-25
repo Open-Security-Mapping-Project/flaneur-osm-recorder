@@ -29,7 +29,7 @@ import {
 } from './storage.js';
 import { exportSession } from './export.js';
 import { GpsManager } from './gps.js';
-import { showToast } from './ui-utils.js';
+import { showToast, closeModal, escHtml } from './ui-utils.js';
 import { DirectionWidget, degreesToCardinal } from './direction-widget.js';
 
 // ─── State ─────────────────────────────────────────────────────────────────
