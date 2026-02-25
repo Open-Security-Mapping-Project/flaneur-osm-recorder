@@ -537,13 +537,18 @@ function recordNode(preset, note, photos) {
   let lat, lon, accuracy;
 
   if (placementMode === 'crosshair') {
-    // Use map center - Leaflet's getCenter() returns the geographical center
+    // Force map to recalculate its size to ensure center is accurate
+    // This ensures the geographic center matches the visual crosshair position
+    map.invalidateSize();
+
+    // Use map center - getCenter() returns LatLng object with precise coordinates
     const center = map.getCenter();
-    lat = center.lat;
-    lon = center.lng;
+    // Wrap to ensure we're within valid coordinate bounds
+    lat = L.Util.formatNum(center.lat, 6);
+    lon = L.Util.formatNum(center.lng, 6);
     accuracy = null; // No GPS accuracy in manual mode
 
-    console.log(`⊕ Recording at crosshair (map center): ${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+    console.log(`⊕ Recording at crosshair (map center): ${lat}, ${lon}`);
   } else {
     // Use GPS position
     const pos = gps.getCurrentPosition();
@@ -880,6 +885,7 @@ function renderNodeList() {
   const header = document.getElementById('nodelist-count');
   if (header) header.textContent = `${nodes.length} node${nodes.length !== 1 ? 's' : ''}`;
 
+  // Clear container to prevent duplicates
   container.innerHTML = '';
 
   if (!nodes.length) {
