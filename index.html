@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0a0e1a" />
+  <meta name="description" content="Field survey tool for OpenStreetMap / JOSM workflows" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Flaneur" />
+  <link rel="manifest" href="/manifest.json" />
+  <title>Flaneur OSM Recorder</title>
+
+  <!-- Leaflet CSS loaded by JS module -->
+
+  <!-- Augmented UI -->
+  <link rel="stylesheet"
+    href="https://unpkg.com/augmented-ui@2/augmented-ui.min.css" />
+
+  <!-- Fonts: Rajdhani (display) + Share Tech Mono (data) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap"
+    rel="stylesheet" />
+
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Top bar ─────────────────────────────────────────────────── -->
+  <header id="topbar">
+    <button id="btn-menu" class="icon-btn" data-i18n-title="menuOpen" aria-label="Menu">☰</button>
+    <span class="title">FLANEUR</span>
+    <!-- Direction badge — shows saved direction, always visible when set -->
+    <div id="direction-badge" hidden augmented-ui="tl-clip br-clip exe"></div>
+    <button id="btn-gps" class="icon-btn" aria-label="GPS">
+      📍<span id="gps-dot" class="gps-dot gps-dot--off"></span>
+    </button>
+    <button id="btn-export" augmented-ui="tl-clip br-clip exe"
+      data-i18n="exportData">Export</button>
+  </header>
+
+  <!-- ── Map ────────────────────────────────────────────────────── -->
+  <div id="map-wrap">
+    <div id="map"></div>
+    <button id="btn-map-lock" class="map-btn" augmented-ui="tl-clip br-clip exe"
+      title="Lock map to GPS">🔒</button>
+    <button id="btn-undo" class="map-btn" augmented-ui="tl-clip br-clip exe"
+      data-i18n-title="nodeUndo" title="Undo last">↩</button>
+    <!-- Map overlay buttons -->
+    <button id="btn-direction" class="map-btn map-btn--direction" augmented-ui="tl-clip br-clip exe"
+            title="Set direction" aria-label="Set direction">⬆</button>
+    <button id="btn-placement-mode" class="map-btn map-btn--placement" augmented-ui="tl-clip br-clip exe"
+            title="GPS mode: place at current location" aria-label="Toggle placement mode">📍</button>
+    <button id="btn-undo" class="map-btn" augmented-ui="tl-clip br-clip exe"
+            data-i18n-title="nodeUndo" title="Undo last">↩</button>
+
+  </div>
+
+  <!-- ── Controls ───────────────────────────────────────────────── -->
+  <div id="controls">
+    <div id="mode-tabs" role="tablist" aria-label="Collection modes"></div>
+    <div id="preset-grid" role="group" aria-label="Preset buttons"></div>
+  </div>
+
+  <!-- ── Status bar ─────────────────────────────────────────────── -->
+  <div id="statusbar" aria-live="polite">
+    <span id="status-coords">—</span>
+    <span id="status-accuracy"></span>
+    <span id="status-node-count">0 nodes</span>
+    <button id="btn-statusbar-list" class="statusbar-list-btn" title="Review saved nodes" aria-label="Review saved nodes">⌃</button>
+  </div>
+</div><!-- #app -->
+
+<!-- ── Toast ──────────────────────────────────────────────────────── -->
+<div id="toast" role="alert" aria-live="assertive" augmented-ui="tl-clip br-clip exe"></div>
+
+<!-- ── Session Modal ──────────────────────────────────────────────── -->
+<div id="modal-session" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="session-modal-title">
+  <div class="modal-box" augmented-ui="tl-clip br-clip exe">
+    <div class="modal-title" id="session-modal-title" data-i18n="sessionModalTitle">Session</div>
+
+    <button id="btn-session-new" class="session-option" augmented-ui="tl-clip br-clip exe">
+      <div class="session-option-title" data-i18n="sessionNew">New Session</div>
+      <div class="session-option-desc" data-i18n="sessionNewLabel">Start a fresh data collection session</div>
+    </button>
+
+    <button id="btn-session-append" class="session-option" augmented-ui="tl-clip br-clip exe" disabled>
+      <div class="session-option-title" data-i18n="sessionAppend">Append to Last Session</div>
+      <div class="session-option-desc" id="session-append-info" data-i18n="sessionNoExisting">No previous session found.</div>
+    </button>
+  </div>
+</div>
+
+<!-- ── Note Modal ─────────────────────────────────────────────────── -->
+<div id="modal-note" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="note-modal-title">
+  <div class="modal-box" augmented-ui="tl-clip br-clip exe">
+    <div class="modal-title" id="note-modal-title">
+      <span data-i18n="noteModalTitle">Add Note</span>
+      — <span id="note-preset-label"></span>
+    </div>
+    <div class="modal-body">
+      <textarea id="note-input" augmented-ui="tl-clip br-clip exe"
+        data-i18n-placeholder="noteModalPlaceholder"
+        placeholder="Optional note for this point…"
+        rows="3"></textarea>
+
+      <!-- Direction row -->
+      <div class="direction-row">
+        <span class="direction-row-label">Direction</span>
+        <span id="note-direction-display" class="direction-row-value">Not set</span>
+        <button id="btn-set-direction" class="btn-ghost btn-sm" augmented-ui="tl-clip br-clip exe">⬆ Set</button>
+        <button id="btn-clear-direction" class="btn-ghost btn-sm" augmented-ui="tl-clip br-clip exe">✕</button>
+      </div>
+
+      <div class="btn-row" style="margin-top: 10px; margin-bottom: 0;">
+        <button id="btn-attach-photo" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+          data-i18n="photoAttach">Attach Photo</button>
+        <input type="file" id="photo-file-input" accept="image/*" capture="environment"
+          multiple style="display:none" />
+      </div>
+      <div id="photo-count" class="photo-strip"></div>
+
+      <p class="photo-workflow-hint" data-i18n="photoWorkflowHint"></p>
+    </div>
+    <div class="btn-row">
+      <button id="btn-note-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+        data-i18n="noteModalCancel">Cancel</button>
+      <button id="btn-note-save" class="btn-primary" augmented-ui="tl-clip br-clip exe"
+        data-i18n="noteModalSave">Save Point</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Export Modal ───────────────────────────────────────────────── -->
+<div id="modal-export" class="modal-backdrop" hidden role="dialog" aria-modal="true">
+  <div class="modal-box" augmented-ui="tl-clip br-clip exe">
+    <div class="modal-title" data-i18n="exportModalTitle">Export Session</div>
+    <div class="modal-body">
+      <p style="font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--accent3); margin-bottom: 14px;">
+        <span id="export-session-info"></span>
+      </p>
+
+      <button id="btn-export-osm" class="export-option" augmented-ui="tl-clip br-clip exe">
+        <span class="export-option-title" data-i18n="exportOsmXml">JOSM / OSM XML</span>
+        <span class="export-option-desc" data-i18n="exportOsmHint">Open in JOSM via File › Open. Review nodes, add detail, then upload to OSM.</span>
+      </button>
+
+      <button id="btn-export-gpx" class="export-option" augmented-ui="tl-clip br-clip exe">
+        <span class="export-option-title" data-i18n="exportGpx">GPX Track</span>
+        <span class="export-option-desc" data-i18n="exportGpxHint">Universal format. Tags are embedded as descriptions.</span>
+      </button>
+
+      <button id="btn-export-geojson" class="export-option" augmented-ui="tl-clip br-clip exe">
+        <span class="export-option-title" data-i18n="exportGeoJson">GeoJSON</span>
+        <span class="export-option-desc" data-i18n="exportGeoJsonHint">For use in GIS tools, QGIS, etc.</span>
+      </button>
+
+      <p class="photo-workflow-hint" data-i18n="exportPhotoNote" style="margin-top:12px;"></p>
+    </div>
+    <div class="btn-row">
+      <button id="btn-export-close" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+        data-i18n="noteModalCancel">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tutorial Modal ─────────────────────────────────────────────── -->
+<div id="modal-tutorial" class="modal-backdrop" hidden role="dialog" aria-modal="true">
+  <div class="modal-box" augmented-ui="tl-clip br-clip exe">
+    <div class="tutorial-progress" id="tut-progress">1 / 6</div>
+    <div class="tutorial-title" id="tut-title"></div>
+    <div class="tutorial-body" id="tut-body"></div>
+    <div class="btn-row">
+      <button id="btn-tut-skip" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+        data-i18n="tutorialSkip">Skip</button>
+      <button id="btn-tut-next" class="btn-primary" augmented-ui="tl-clip br-clip exe"
+        data-i18n="tutorialNext">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Settings Panel ─────────────────────────────────────────────── -->
+<!-- ── Settings Panel ─────────────────────────────────────────────── -->
+<div id="panel-settings" hidden role="dialog" aria-modal="true">
+  <div class="settings-content">
+    <div class="settings-title" data-i18n="settingsTitle">Settings</div>
+
+    <div class="settings-row">
+      <label class="settings-label" data-i18n="settingsLanguage">Language</label>
+      <select id="select-language" class="settings-select" augmented-ui="tl-clip br-clip exe"></select>
+    </div>
+
+    <hr class="settings-divider" />
+
+    <button id="btn-settings-location" class="btn-ghost" augmented-ui="tl-clip br-clip exe">
+      🗺️ Set Map Location
+    </button>
+
+    <button id="btn-settings-tutorial" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+            data-i18n="settingsTutorial">Show Tutorial</button>
+
+    <button id="btn-open-nodelist" class="btn-ghost" augmented-ui="tl-clip br-clip exe">
+      ✏ Edit Saved Items
+    </button>
+
+    <button id="btn-settings-export" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+            data-i18n="settingsDownload">Export Data</button>
+
+    <button id="btn-settings-clear" class="btn-secondary" augmented-ui="tl-clip br-clip exe"
+            data-i18n="settingsClearStorage">Clear All Sessions</button>
+
+    <hr class="settings-divider" />
+    <div class="settings-info">
+      <div data-i18n="settingsAbout"></div>
+      <br />
+      <div>Storage used: <span id="storage-used">—</span></div>
+      <br />
+      <div>
+        <span data-i18n="settingsLicense">GPL-3.0</span><br />
+        <a href="https://github.com/flaneur-osm/flaneur-osm-recorder" target="_blank" rel="noopener">
+          github.com/flaneur-osm
+        </a><br />
+        <a href="https://gitlab.com/flaneur-osm/flaneur-osm-recorder" target="_blank" rel="noopener">
+          gitlab.com/flaneur-osm
+        </a>
+      </div>
+    </div>
+  </div>
+  <!-- tap outside to close -->
+  <div class="settings-backdrop" id="btn-settings-close" role="button" tabindex="0"
+    aria-label="Close settings"></div>
+</div>
+
+<!-- ── Node List Panel (slides up from bottom) ────────────────────────── -->
+<div id="panel-nodelist" hidden role="dialog" aria-modal="true" aria-label="Saved nodes">
+  <div class="nodelist-backdrop" id="btn-nodelist-close"></div>
+  <div class="nodelist-sheet">
+    <div class="nodelist-header">
+      <div class="nodelist-title">
+        <span>Saved Items</span>
+        <span id="nodelist-count" class="nodelist-count-badge"></span>
+      </div>
+      <button class="icon-btn" id="btn-nodelist-close-x" onclick="document.getElementById('panel-nodelist').setAttribute('hidden','')">✕</button>
+    </div>
+    <div id="nodelist-items" class="nodelist-items"></div>
+  </div>
+</div>
+
+<!-- ── Node Edit Modal ─────────────────────────────────────────────────── -->
+<div id="modal-nodeedit" class="modal-backdrop" hidden role="dialog" aria-modal="true">
+  <div class="modal-box" augmented-ui="tl-clip br-clip exe">
+    <div class="modal-title">Edit Node</div>
+    <div class="modal-body">
+      <div class="nodeedit-section-label">Tags (edit in JOSM)</div>
+      <div id="nodeedit-tags" class="nodeedit-tags"></div>
+
+      <div class="nodeedit-section-label" style="margin-top:12px;">Coordinates</div>
+      <div id="nodeedit-coords" class="nodeedit-coords"></div>
+
+      <div class="nodeedit-section-label" style="margin-top:12px;">Recorded</div>
+      <div id="nodeedit-time" class="nodeedit-coords"></div>
+
+      <div class="nodeedit-section-label" style="margin-top:12px;">Note</div>
+      <textarea id="nodeedit-note" class="nodeedit-textarea" augmented-ui="tl-clip br-clip exe"
+        placeholder="Add or edit note…" rows="3"></textarea>
+    </div>
+    <div class="btn-row">
+      <button id="btn-nodeedit-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe">Cancel</button>
+      <button id="btn-nodeedit-save" class="btn-primary" augmented-ui="tl-clip br-clip exe">Save Note</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── Node Delete Confirm Modal ──────────────────────────────────────── -->
+<div id="modal-nodedelete" class="modal-backdrop" hidden role="dialog" aria-modal="true">
+  <div class="modal-box modal-box--narrow" augmented-ui="tl-clip br-clip exe">
+    <div class="modal-title" style="color: var(--accent2);">Delete Node?</div>
+    <div class="modal-body">
+      <p>Permanently delete <strong id="nodedelete-label"></strong>?</p>
+      <p style="color: var(--text-dim); font-size: 13px; margin-top: 6px;">This cannot be undone.</p>
+    </div>
+    <div class="btn-row">
+      <button id="btn-nodedelete-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe">Cancel</button>
+      <button id="btn-nodedelete-confirm" class="btn-secondary" augmented-ui="tl-clip br-clip exe">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Manual Location Modal ──────────────────────────────────────── -->
+<div id="modal-manual-location" class="modal-backdrop" hidden role="dialog" aria-modal="true">
+  <div class="modal-box" augmented-ui="tl-clip br-clip exe">
+    <div class="modal-title">Set Map Location</div>
+    <div class="modal-body">
+      <p style="margin-bottom: 12px; color: var(--text-dim); font-size: 13px;">
+        Enter coordinates to navigate the map. Useful when GPS is unavailable.
+      </p>
+
+      <div class="settings-row" style="margin-bottom: 10px;">
+        <label class="settings-label">Latitude (-90 to 90)</label>
+        <input type="text" id="manual-lat" class="settings-input" augmented-ui="tl-clip br-clip exe"
+               placeholder="e.g. 51.505" />
+      </div>
+
+      <div class="settings-row" style="margin-bottom: 10px;">
+        <label class="settings-label">Longitude (-180 to 180)</label>
+        <input type="text" id="manual-lon" class="settings-input" augmented-ui="tl-clip br-clip exe"
+               placeholder="e.g. -0.09" />
+      </div>
+
+      <button id="btn-use-current-view" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+              style="width: 100%; margin-top: 8px; font-size: 11px;">
+        Use Current Map Center
+      </button>
+
+      <p class="photo-workflow-hint" style="margin-top: 12px;">
+        After setting location, use crosshair mode (⊕) to place nodes by panning the map.
+      </p>
+    </div>
+    <div class="btn-row">
+      <button id="btn-manual-location-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe">Cancel</button>
+      <button id="btn-manual-location-set" class="btn-primary" augmented-ui="tl-clip br-clip exe">Set Location</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/js/main.js"></script>
+</body>
+</html>

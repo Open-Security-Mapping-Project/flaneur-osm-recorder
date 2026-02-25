@@ -1,0 +1,46 @@
+
+/**
+ * Direction Widget Styles
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+/* Widget overlay container - created dynamically by direction-widget.js */
+#direction-widget {
+  position: absolute;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 38%, rgba(7,11,20,0.55) 100%);
+}
+
+#direction-widget[hidden] {
+  display: none !important;
+}
+
+#direction-widget svg {
+  touch-action: none;
+  cursor: crosshair;
+  filter: drop-shadow(0 0 18px rgba(0,255,229,0.35));
+  max-width: min(300px, 85vmin);
+  max-height: min(300px, 85vmin);
+}
+
+#dir-readout {
+  position: absolute;
+  bottom: calc(50% - 190px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: "Share Tech Mono", monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  text-shadow: 0 0 10px rgba(0,255,229,0.8);
+  white-space: nowrap;
+}
+
+/* Map crosshair for center placement */
