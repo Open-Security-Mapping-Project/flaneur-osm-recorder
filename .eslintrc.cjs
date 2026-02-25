@@ -24,7 +24,7 @@ module.exports = {
   },
   rules: {
     // ── Code quality ──────────────────────────────────────────────────
-    "no-console": ["warn", { allow: ["warn", "error"] }],
+    // "no-console": ["warn", { allow: ["warn", "error"] }],
     "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     "prefer-const": "error",
     "no-var": "error",

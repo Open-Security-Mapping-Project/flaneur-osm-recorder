@@ -29,6 +29,7 @@ import {
 } from './storage.js';
 import { exportSession } from './export.js';
 import { GpsManager } from './gps.js';
+import { showToast } from './ui-utils.js';
 import { DirectionWidget, degreesToCardinal } from './direction-widget.js';
 
 // ─── State ─────────────────────────────────────────────────────────────────
@@ -41,7 +42,7 @@ let holdTimer = null;
 let pendingPreset = null;
 let pendingPhotos = [];
 let placementMode = 'gps'; // 'gps' or 'crosshair'
-let nodeMarkers = new Map(); // Track markers by node ID for visualization
+const nodeMarkers = new Map(); // Track markers by node ID for visualization
 
 // Direction widget state
 let pendingDirection = null; // degrees (0-359) or null
@@ -491,11 +492,11 @@ function renderPresetGrid(modeId) {
     btn.innerHTML = `<span class="preset-icon">${preset.icon}</span><span class="preset-label">${t(preset.labelKey)}</span>`;
     btn.title = t('holdForNote');
 
-    // Tap = instant record
-    btn.addEventListener('click', (e) => {
-      if (e.detail === 0) return; // synthetic click from hold, ignore
-      recordNode(preset, '', []);
-    });
+    // Tap = instant record // this was duplicating.
+    // btn.addEventListener('click', (e) => {
+    //   if (e.detail === 0) return; // synthetic click from hold, ignore
+    //   recordNode(preset, '', []);
+    // });
 
     // Hold = open note modal
     btn.addEventListener('pointerdown', () => {
@@ -1088,37 +1089,12 @@ function findPresetByTags(tags) {
   return null;
 }
 
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-function closeModal(id) {
-  document.getElementById(id)?.setAttribute('hidden', '');
-}
-
 function updateNodeCount() {
   const el = document.getElementById('status-node-count');
   if (el && currentSession) {
     el.textContent = t('nodeCount', { count: currentSession.nodes.length });
   }
 }
-
-let toastTimer;
-function showToast(msg, type = 'info') {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-  toast.textContent = msg;
-  toast.className = `toast toast--${type} toast--visible`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    toast.classList.remove('toast--visible');
-  }, 3000);
-}
-
 
 // ─── Manual Location Modal ─────────────────────────────────────────────────
 
