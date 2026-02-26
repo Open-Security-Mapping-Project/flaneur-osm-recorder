@@ -682,7 +682,7 @@ function updatePhotoPreview() {
 // ─── Standalone direction button (on map overlay) ─────────────────────────
 
 document.getElementById('btn-direction')?.addEventListener('click', () => {
-  directionWidget.open(pendingDirection);
+  directionWidget.toggle(pendingDirection);
 });
 
 // ─── Placement mode toggle ────────────────────────────────────────────────

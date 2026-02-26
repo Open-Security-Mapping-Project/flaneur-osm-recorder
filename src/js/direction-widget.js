@@ -37,6 +37,7 @@ export class DirectionWidget {
     this._dragging = false;
     this._el = null; // overlay DOM element
     this._svg = null;
+    this._isOpen = false; // NEW: Track open state
 
     this._build();
   }
@@ -50,12 +51,26 @@ export class DirectionWidget {
     // Prevent map interaction while widget is open
     this._el.style.pointerEvents = 'all';
     this._el.style.display = 'flex';
+    this._isOpen = true;
   }
 
   close() {
     this._el.setAttribute('hidden', '');
     this._el.style.pointerEvents = 'none';
     this._el.style.display = 'none';
+    this._isOpen = false;
+  }
+
+  toggle(initialDeg = null) {
+    if (this._isOpen) {
+      this.close();
+    } else {
+      this.open(initialDeg);
+    }
+  }
+
+  isOpen() {
+    return this._isOpen;
   }
 
   getCurrentDegrees() {
@@ -189,9 +204,9 @@ export class DirectionWidget {
   _cardinalLabels() {
     const cards = [
       { label: 'N', deg: 0, color: '#ff3c6e' },
-      { label: 'E', deg: 90, color: 'rgba(0,255,229,0.7)' },
-      { label: 'S', deg: 180, color: 'rgba(0,255,229,0.7)' },
-      { label: 'W', deg: 270, color: 'rgba(0,255,229,0.7)' },
+      { label: 'E', deg: 90, color: 'rgba(0,255,229,0.8)' },
+      { label: 'S', deg: 180, color: 'rgba(0,255,229,0.8)' },
+      { label: 'W', deg: 270, color: 'rgba(0,255,229,0.8)' },
     ];
     return cards
       .map(({ label, deg, color }) => {
@@ -200,7 +215,7 @@ export class DirectionWidget {
         const x = (150 + r * Math.cos(rad)).toFixed(1);
         const y = (150 + r * Math.sin(rad) + 4).toFixed(1); // +4 for text baseline
         return `<text x="${x}" y="${y}" text-anchor="middle"
-        font-family="Share Tech Mono, monospace" font-size="13"
+        font-family="Share Tech Mono, monospace" font-size="16"
         font-weight="bold" fill="${color}" letter-spacing="0.05em">${label}</text>`;
       })
       .join('\n');
@@ -354,25 +369,30 @@ export class DirectionWidget {
       'letter-spacing: 0.08em',
       'text-transform: uppercase',
       'padding: 8px 18px',
-      'border: none',
+      'border: 1px solid var(--accent, #00ffe5)',
       'cursor: pointer',
       '--aug-tl: 7px',
       '--aug-br: 7px',
       '--aug-border-all: 1px',
+      'filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.67))',
     ].join(';');
 
     if (variant === 'primary') {
       btn.style.cssText += [
-        ';background: rgba(0,255,229,0.14)',
-        'color: var(--accent, #00ffe5)',
+        ';background: rgba(0,255,229,0.7)',
+        // 'color: var(--accent, #00ffe5)',
+        'color: #000',
         '--aug-border-bg: var(--accent, #00ffe5)',
-        'opacity: 0.5',
+        'opacity: 0.75',
       ].join(';');
     } else {
       btn.style.cssText += [
-        ';background: transparent',
-        'color: var(--text-dim, #607080)',
+        ';background: rgba(0,255,229,0.7)',
+        // ';background: transparent',
+        // 'color: var(--text-dim, #607080)',
+        'color: #00',
         '--aug-border-bg: var(--border, #1a2840)',
+        'opacity: 0.75',
       ].join(';');
     }
     return btn;

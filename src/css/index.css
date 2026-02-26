@@ -623,7 +623,12 @@ html, body {
 }
 
 /* Direction map overlay button */
-#btn-direction { bottom: 134px; right: 10px; color: var(--accent); }
+#btn-direction {
+  bottom: 134px;
+  right: 10px;
+  color: var(--accent);
+  z-index: 650; /* Higher than direction widget overlay (600) */
+}
 #btn-direction:hover { color: var(--accent); --aug-border-bg: var(--accent); }
 #btn-placement-mode { bottom: 188px; right: 10px; color: var(--accent); }
 #btn-placement-mode:hover { --aug-border-bg: var(--accent2); }

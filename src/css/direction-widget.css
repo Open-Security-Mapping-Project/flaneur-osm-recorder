@@ -23,9 +23,11 @@
 #direction-widget svg {
   touch-action: none;
   cursor: crosshair;
-  filter: drop-shadow(0 0 18px rgba(0,255,229,0.35));
+  /*filter: drop-shadow(0 0 18px rgba(0,255,229,0.35));*/
   max-width: min(300px, 85vmin);
   max-height: min(300px, 85vmin);
+  filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.67)) ;
+  /*drop-shadow(0 0 18px rgba(0,255,229,0.35));*/
 }
 
 #dir-readout {
@@ -41,6 +43,11 @@
   pointer-events: none;
   text-shadow: 0 0 10px rgba(0,255,229,0.8);
   white-space: nowrap;
+  filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.67));
+}
+
+button#dir-confirm-btn {
+  /* styles generated somewhere else inline. _makeBtn
 }
 
 /* Map crosshair for center placement */
