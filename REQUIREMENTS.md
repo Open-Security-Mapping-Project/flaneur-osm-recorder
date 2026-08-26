@@ -7,6 +7,9 @@ never do. `CLAUDE.md` covers *how* the code is organized; this covers *what the
 software is obliged to deliver*. When the two disagree about behavior, this
 file wins and `CLAUDE.md` should be corrected.
 
+## See [DEVELOPMENT.md](DEVELOPMENT.md) for the big info on dev process.
+
+
 Requirements are marked:
 
 | Mark | Meaning |
