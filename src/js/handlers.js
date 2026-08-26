@@ -195,6 +195,24 @@ function onWindowResize() {
 }
 
 /**
+ * Refuse a page-level pinch-zoom.
+ *
+ * The viewport meta locks scale, but iOS Safari deliberately ignores
+ * `user-scalable=no` in a browser tab — it honors it only once the app is
+ * installed to the home screen. Safari's proprietary gesture events are the
+ * remaining lever. Without this a two-finger pinch scales the whole shell, and
+ * since html/body are overflow:hidden there is no scrollbar to reach whatever
+ * ends up off-screen; it reads as the UI having gone too wide.
+ *
+ * Gestures over the map are left alone. Leaflet runs its own pinch-to-zoom
+ * from raw touch events, which is what the user means there.
+ */
+function onGesturePinch(e) {
+  if (e.target?.closest?.('.leaflet-container')) return;
+  e.preventDefault();
+}
+
+/**
  * Escape backs out of whatever is on top — the direction wheel or any open
  * modal or panel — with the same effect as that layer's own cancel.
  */
@@ -300,6 +318,13 @@ export function registerHandlers() {
 
   // Escape backs out of the topmost open layer.
   document.addEventListener('keydown', onDocumentKeydown);
+
+  // Page pinch-zoom, off. Non-passive: preventDefault is the whole point, and
+  // Safari would ignore it on a passive listener.
+  const noPinch = { passive: false };
+  document.addEventListener('gesturestart', onGesturePinch, noPinch);
+  document.addEventListener('gesturechange', onGesturePinch, noPinch);
+  document.addEventListener('gestureend', onGesturePinch, noPinch);
 
   // Viewport changes (phone URL bar collapsing, rotation) resize the map
   // container without Leaflet noticing.

@@ -244,6 +244,20 @@ while they move about.* These requirements exist to earn that.
   color, so the association is visible rather than inferred — the node count
   and the caret that opens the node list are one yellow pair at the right edge,
   and the direction button's arrow turns to the bearing it sets.
+- **R6.15 (MUST)** The app shell does not scale under a browser pinch. Pinch is
+  the map's gesture — Leaflet handles it — so a page-level pinch is never what
+  the surveyor meant, and because `html`/`body` are `overflow: hidden` there is
+  no scrollbar to reach whatever it pushes off-screen. Enforced three ways,
+  because none is sufficient alone: `maximum-scale=1, user-scalable=no` in the
+  viewport meta (which iOS honors only in an installed PWA), `touch-action:
+  pan-x pan-y` on the root, and refusing Safari's `gesture*` events outside the
+  map. Accepted trade-off against WCAG 1.4.4: the map zooms, the text does not.
+- **R6.16 (MUST)** A modal opened from a panel stacks above that panel. The
+  node list sheet clears the map buttons at `z-index: 1010` while modals sit at
+  1000, so its edit and delete modals are explicitly lifted to 1020 — a modal
+  behind the thing that launched it is a dead end. Stack, low to high: map
+  controls 450–650 · settings 900 · modals 1000 · node list 1010 · node list's
+  modals 1020 · toast 2000.
 
 ---
 

@@ -34,6 +34,14 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  /*
+    Refuses browser pinch-zoom and double-tap zoom on the shell while still
+    allowing panning, so the node list and the mode tabs keep scrolling. This
+    does not disturb the map: Leaflet drives its own pinch from touch events in
+    JS and sets touch-action:none on its container, which touch-action here
+    cannot take away.
+  */
+  touch-action: pan-x pan-y;
   background: var(--bg);
   color: var(--text);
   font-family: 'Rajdhani', sans-serif;
@@ -1182,6 +1190,22 @@ body {
 .nodeedit-textarea:focus {
   outline: none;
   border-color: var(--accent-dim);
+}
+
+/*
+  The two modals the node list opens must out-stack the node list itself.
+
+  #panel-nodelist sits at 1010 to clear the map buttons, but .modal-backdrop is
+  1000 — so tapping the pencil opened the edit modal *behind* the sheet that
+  launched it, dimmed and mostly unreachable. A modal opened from a panel has
+  to be above that panel; anything else is a dead end for the user.
+
+  App stack, low to high: map controls 450-650 · settings panel 900 · modals
+  1000 · node list sheet 1010 · the node list's own modals 1020 · toast 2000.
+*/
+#modal-nodeedit,
+#modal-nodedelete {
+  z-index: 1020;
 }
 
 /* narrow delete confirm modal */

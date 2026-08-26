@@ -2,7 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!--
+    Page zoom is locked. The map does its own pinch-to-zoom, so a page-level
+    pinch is never what the user meant: it scales the shell instead, leaving
+    the controls partly off-screen and unreachable with no scrollbar to get
+    back (html/body are overflow:hidden). iOS honors this in an installed PWA;
+    in a Safari tab it ignores user-scalable, which is why handlers.js also
+    refuses the gesture events. See REQUIREMENTS.md R6.15.
+  -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0e1a" />
   <meta name="description" content="Field survey tool for OpenStreetMap / JOSM workflows" />
   <meta name="mobile-web-app-capable" content="yes" />
