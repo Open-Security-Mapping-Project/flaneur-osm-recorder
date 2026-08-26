@@ -353,7 +353,7 @@ export function nextNodeId(session) {
  * Add a node to the given session.
  * Returns the new node, or null if it could not be persisted.
  */
-export function addNode(session, { lat, lon, accuracy, tags, note, photos }) {
+export function addNode(session, { lat, lon, accuracy, tags, note, photos, presetId }) {
   const node = {
     id: nextNodeId(session), // negative IDs: JOSM convention for new nodes
     lat,
@@ -363,6 +363,11 @@ export function addNode(session, { lat, lon, accuracy, tags, note, photos }) {
     tags: { ...tags, source: 'flaneur_survey' },
     note: note || '',
     photos: photos || [], // array of base64 data URIs or blob URLs
+    // Which button made this node. A display aid only — it picks the right
+    // icon and label without having to infer them back out of the tags, which
+    // is ambiguous for presets that write identical tags. Never exported:
+    // export.js reads node.tags, so this cannot reach OSM.
+    presetId: presetId || null,
   };
   session.nodes.push(node);
 

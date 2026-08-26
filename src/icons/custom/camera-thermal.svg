@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" role="img" aria-label="Thermal camera">
+<title>Thermal camera</title>
+<path d="M2.8 11.4h13.6v1.5H2.8z"/>
+<path fill-rule="evenodd" d="M4 12.9h11.4a1.7 1.7 0 0 1 1.7 1.7v4.6a1.7 1.7 0 0 1-1.7 1.7H4a1.7 1.7 0 0 1-1.7-1.7v-4.6A1.7 1.7 0 0 1 4 12.9z
+ M8.4 14.6a2.3 2.3 0 1 0 0 4.6 2.3 2.3 0 1 0 0-4.6z"/>
+<path d="M17.6 14.3h2.1v5.2h-2.1z"/>
+<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+ <path d="M13.6 8.6c1-1 1-2.1 0-3.1s-1-2.1 0-3.1"/>
+ <path d="M17.6 8.6c1-1 1-2.1 0-3.1s-1-2.1 0-3.1"/>
+ <path d="M21.6 8.6c1-1 1-2.1 0-3.1s-1-2.1 0-3.1"/>
+</g>
+</svg>

@@ -5,10 +5,24 @@
  * To add a new language: copy the 'en' block, change the key to your
  * BCP-47 language tag (e.g. 'fr', 'de', 'es'), translate all values.
  * Then add it to AVAILABLE_LOCALES below.
+ *
+ * ── Language AND country ─────────────────────────────────────────────────
+ * The selector is "Language / Country", not just language, because the
+ * vocabulary of a street survey is regional even where the language is not.
+ * The presets are written for US English: `post_box` is labelled "Post Box"
+ * for the blue USPS collection box, hydrants are pillar hydrants, and the
+ * crossing preset means ladder-bar markings.
+ *
+ * A regional variant is therefore a full locale entry, not a flag on an
+ * existing one. To add British English, copy the 'en' block to 'en-GB',
+ * change the labels that differ ("Post Box" → "Postbox", "Sidewalk" →
+ * "Pavement", and so on), and add { code: 'en-GB', label: 'English: UK' }
+ * below. Nothing else needs to change — the tags stay identical, since OSM
+ * tag values are the same worldwide. Only the words on the buttons move.
  */
 
 export const AVAILABLE_LOCALES = [
-  { code: 'en', label: 'English' },
+  { code: 'en', label: 'English: US' },
   { code: 'fr', label: 'Français' },
   { code: 'de', label: 'Deutsch' },
   { code: 'es', label: 'Español' },
@@ -221,7 +235,9 @@ const strings = {
     settingsClearConfirm: 'Delete ALL saved sessions? This cannot be undone.',
     settingsClearYes: 'Delete Everything',
     settingsClearNo: 'Cancel',
-    settingsLanguage: 'Language',
+    // "/ Country" because the entry selects regional wording, not only
+    // language — see the AVAILABLE_LOCALES note at the top of this file.
+    settingsLanguage: 'Language / Country',
     soundOn: '🔊 Sound On',
     soundOff: '🔇 Sound Off',
     settingsAbout: 'About',
@@ -230,13 +246,13 @@ const strings = {
 
     // About
     aboutText:
-      'Flaneur OSM Recorder is a free, open-source field survey tool. Data never leaves your device. Export to JOSM for review before contributing to OpenStreetMap.',
+      'Flaneur OSM Recorder is a free, open-source field survey tool for GIS power users. Data never leaves your device. Export to apps like JOSM (XML or GeoJson) for processing & review before contributing to OpenStreetMap. This app does NOT add anything to OSM directly.',
 
     // Tutorial slides
     tutorialSkip: 'Skip',
     tutorialNext: 'Next',
     tutorialDone: 'Start Surveying',
-    tutorialSlide1Title: 'Welcome to Flaneur',
+    tutorialSlide1Title: 'Welcome to Flaneur - from the Open Security Mapping Project',
     tutorialSlide1Body:
       'A field recorder for mapping the world around you. All data stays on your device — nothing is sent anywhere without your review.',
     tutorialSlide2Title: 'GPS & the Map',
@@ -247,13 +263,13 @@ const strings = {
       'Tap any preset button to instantly save your current GPS position with OSM tags. Hold the button for 1 second to add a text note before saving.',
     tutorialSlide4Title: 'Collection Modes',
     tutorialSlide4Body:
-      'Switch between Urban, Surveillance, Curbs, Bicycle, Amenities, and Power modes. Each mode shows relevant OSM presets for that survey type.',
+      'Switch between Urban, Surveillance / Detail, Curbs, Bicycle, Amenities, and Power modes. Each mode shows some relevant OSM presets for that survey type.',
     tutorialSlide5Title: 'Photos',
     tutorialSlide5Body:
-      'Hold any preset and tap the camera icon to attach a photo. Photos stay on your device. For OSM, upload to Mapillary or Wikimedia Commons and link the URL in JOSM.',
-    tutorialSlide6Title: 'Export to JOSM',
+      'Hold any preset and tap the camera icon to attach a photo. Photos stay on your device. For OSM, upload to Mapillary or Wikimedia Commons and link the URL in JOSM. (Note this feature is still in development and NOT efficient.)',
+    tutorialSlide6Title: 'Export to JOSM or other GIS apps',
     tutorialSlide6Body:
-      'Tap Export → choose OSM XML → send the file to your desktop → open in JOSM with File › Open. Review your nodes, add detail, and upload to OSM when ready.',
+      'Tap Export → choose OSM XML → send the file to your desktop → open in JOSM with File › Open. Review your nodes, add detail, and upload to OSM when ready. It can also export GeoJSON files for QGis and so on.',
 
     // Errors / warnings
     errorGpsUnavailable: 'GPS not available on this device.',

@@ -21,7 +21,9 @@
     "lint:check": "eslint .",
     "format": "prettier --write src/",
     "format:check": "prettier --check src/",
-    "test": "node tests/storage.test.mjs"
+    "test": "node tests/storage.test.mjs && node tests/icons.test.mjs",
+    "icons:fetch": "node tools/fetch-icons.mjs",
+    "icons:credits": "node tools/build-credits.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

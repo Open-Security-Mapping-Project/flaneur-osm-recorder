@@ -1,0 +1,7 @@
+<!-- temaki:speed_bump — CC0-1.0 — https://github.com/rapideditor/temaki/blob/main/icons/speed_bump.svg
+     Vendored by tools/fetch-icons.mjs. Do not hand-edit; edit the manifest and re-fetch. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+  <g transform="scale(1.6)">
+    <path d="M0 10L15 10L15 11L0 11L0 10ZM7.5 5C9.99 5 12 7.01 12 9.5L3 9.5C3 7.01 5.01 5 7.5 5Z"/>
+  </g>
+</svg>

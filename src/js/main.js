@@ -14,7 +14,8 @@ import '../css/index.css';
 import '../css/direction-widget.css';
 
 import { t, setLocale, getLocale, AVAILABLE_LOCALES } from './i18n.js';
-import { MODES, PRESETS } from './presets.js';
+import { MODES, PRESETS, findPresetById, findPresetByTags, FALLBACK_ICON } from './presets.js';
+import { iconMarkup, iconSpriteMarkup } from './icons.js';
 import {
   createSession,
   getLastSession,
@@ -92,6 +93,7 @@ document.addEventListener('DOMContentLoaded', init);
 function init() {
   setLocale(getPref('locale', 'en'));
 
+  installIconSprite();
   initMap();
   initDirectionWidget();
   applyAllStrings();
@@ -103,6 +105,18 @@ function init() {
 
   openSessionModal();
   gps.start();
+}
+
+/**
+ * Put the icon sprite in the document so `<use href="#ico-...">` resolves.
+ *
+ * Must run before anything renders an icon. It goes in first so the preset
+ * grid, the map markers and the node list all draw on first paint rather than
+ * flashing empty boxes.
+ */
+function installIconSprite() {
+  if (document.getElementById('icon-sprite')) return;
+  document.body.insertAdjacentHTML('afterbegin', iconSpriteMarkup());
 }
 
 /**
@@ -505,8 +519,8 @@ function renderExistingNodes() {
 function addNodeMarker(node) {
   if (nodeMarkers.has(node.id)) return nodeMarkers.get(node.id);
 
-  const preset = findPresetByTags(node.tags);
-  const icon = preset ? preset.icon : '📍';
+  const preset = presetForNode(node);
+  const label = preset ? t(preset.labelKey) : t('nodeGeneric');
   const dirTag = node.tags['direction'] ?? node.tags['camera:direction'];
 
   // Per-marker rotation is data-driven and cannot be expressed as a static
@@ -516,16 +530,22 @@ function addNodeMarker(node) {
       ? `<span class="node-marker-arrow" style="transform:rotate(${Number(dirTag)}deg)">↑</span>`
       : '';
 
+  // The marker stands alone on the map with no text beside it, so unlike
+  // every other icon in the app this one carries an accessible name.
+  const markerIcon = iconMarkup(preset?.iconRef ?? FALLBACK_ICON, {
+    className: 'node-marker-icon',
+    label,
+  });
+
   const leafletIcon = L.divIcon({
     className: 'node-marker',
-    html: `<span class="node-marker-icon">${icon}</span>${arrowHtml}`,
+    html: `${markerIcon}${arrowHtml}`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
   });
 
   const dirLabel =
     dirTag != null ? `<br><small>dir: ${dirTag}° ${degreesToCardinal(Number(dirTag))}</small>` : '';
-  const label = preset ? t(preset.labelKey) : t('nodeGeneric');
 
   const marker = L.marker([node.lat, node.lon], { icon: leafletIcon })
     .bindPopup(`<b>${escHtml(label)}</b>${node.note ? `<br>${escHtml(node.note)}` : ''}${dirLabel}`)
@@ -615,7 +635,9 @@ function renderPresetGrid(modeId) {
     btn.className = 'preset-btn';
     btn.setAttribute('augmented-ui', 'tl-clip br-clip exe');
     btn.dataset.presetId = preset.id;
-    btn.innerHTML = `<span class="preset-icon">${preset.icon}</span><span class="preset-label">${escHtml(t(preset.labelKey))}</span>`;
+    btn.innerHTML =
+      iconMarkup(preset.iconRef, { className: 'preset-icon' }) +
+      `<span class="preset-label">${escHtml(t(preset.labelKey))}</span>`;
 
     // Arrows close over `preset`; the logic lives in the named functions.
     btn.addEventListener('pointerdown', () => onPresetPointerDown(preset));
@@ -687,7 +709,15 @@ function recordNode(preset, note, photos) {
     }
   }
 
-  const node = addNode(currentSession, { lat, lon, accuracy, tags, note, photos });
+  const node = addNode(currentSession, {
+    lat,
+    lon,
+    accuracy,
+    tags,
+    note,
+    photos,
+    presetId: preset.id,
+  });
   if (!node) return; // storage rejected the write; the error listener notified
 
   addNodeMarker(node);
@@ -697,7 +727,11 @@ function recordNode(preset, note, photos) {
   const savedDir = pendingDirection;
   clearDirection();
 
-  showToast(buildRecordSummary(preset, node, savedDir), 'success');
+  showToast(
+    buildRecordSummary(preset, node, savedDir),
+    'success',
+    iconMarkup(preset.iconRef, { className: 'toast-icon' })
+  );
   updateNodeCount();
   refreshStorageInfo();
 }
@@ -707,10 +741,11 @@ function recordNode(preset, note, photos) {
  * the node, so the surveyor can catch a wrong bearing or a bad fix without
  * opening the node list.
  *
- * e.g. "📷 Fixed Camera · 245° WSW · ±8m · note · #12"
+ * e.g. "Fixed Camera · 245° WSW · ±8m · note · #12", led by the preset's icon,
+ * which showToast renders ahead of this text.
  */
 function buildRecordSummary(preset, node, direction) {
-  const parts = [`${preset.icon} ${t(preset.labelKey)}`];
+  const parts = [t(preset.labelKey)];
 
   if (direction !== null) {
     const deg = Math.round(direction);
@@ -1039,7 +1074,9 @@ function buildNodeRow(node) {
     .slice(0, 2)
     .join(' · ');
 
-  const icon = findPresetIcon(node.tags) || '📍';
+  const icon = iconMarkup(presetForNode(node)?.iconRef ?? FALLBACK_ICON, {
+    className: 'nodelist-icon',
+  });
   const time = new Date(node.timestamp).toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
@@ -1055,7 +1092,7 @@ function buildNodeRow(node) {
 
   row.innerHTML = `
     <div class="nodelist-row-header">
-      <span class="nodelist-icon">${icon}</span>
+      ${icon}
       <div class="nodelist-meta">
         <span class="nodelist-tags">${escHtml(primaryTag || t('nodeNoTags'))}</span>
         <span class="nodelist-sub">${time} · ${coords}${accuracyStr}${dirStr}</span>
@@ -1237,17 +1274,20 @@ export function fillManualLocationFromMap() {
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-function findPresetByTags(tags) {
-  for (const modePresets of Object.values(PRESETS)) {
-    for (const preset of modePresets) {
-      if (Object.entries(preset.tags).every(([k, v]) => tags[k] === v)) return preset;
-    }
-  }
-  return null;
-}
-
-function findPresetIcon(tags) {
-  return findPresetByTags(tags)?.icon ?? null;
+/**
+ * Which preset produced this node.
+ *
+ * Nodes now record the preset that made them (`node.presetId`), which is
+ * exact. Tag matching is the fallback for nodes saved before that field
+ * existed, and it cannot always be right: urban_pole and pow_pole write
+ * identical tags, as do curb_barrier and bike_bollard, so an older node from
+ * either pair may resolve to its twin.
+ *
+ * presetId is a display aid, not survey data — export.js reads node.tags and
+ * never sees it, so nothing reaches OSM that the surveyor did not record.
+ */
+function presetForNode(node) {
+  return findPresetById(node.presetId) ?? findPresetByTags(node.tags);
 }
 
 function updateNodeCount() {

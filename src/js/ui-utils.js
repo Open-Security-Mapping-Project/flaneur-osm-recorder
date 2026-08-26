@@ -3,10 +3,21 @@
  */
 
 let toastTimer;
-export function showToast(msg, type = 'info') {
+
+/**
+ * @param {string} msg      toast text, always treated as untrusted and escaped
+ * @param {string} [type]   'success' | 'warn' | 'error' | 'info'
+ * @param {string} [iconHtml] optional leading icon, from icons.js iconMarkup()
+ */
+export function showToast(msg, type = 'info', iconHtml = '') {
   const toast = document.getElementById('toast');
   if (!toast) return;
-  toast.textContent = msg;
+
+  // innerHTML rather than textContent because the record confirmation leads
+  // with the preset's icon. `msg` is escaped here — it can contain a
+  // user-typed note — and iconHtml is only ever built by icons.js from our
+  // own sprite ids, never from anything the user supplies.
+  toast.innerHTML = iconHtml + escHtml(msg);
   toast.className = `toast toast--${type} toast--visible`;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => {

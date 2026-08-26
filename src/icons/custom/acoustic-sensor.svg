@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" role="img" aria-label="Acoustic gunshot detector">
+<title>Acoustic gunshot detector</title>
+<path d="M10.6 1.8h2.8v2.2h-2.8z"/>
+<path fill-rule="evenodd" d="M12 4a4.2 4.2 0 0 1 4.2 4.2v5.6A4.2 4.2 0 0 1 12 18a4.2 4.2 0 0 1-4.2-4.2V8.2A4.2 4.2 0 0 1 12 4z
+ M12 6.4a1.8 1.8 0 0 0-1.8 1.8v5.6a1.8 1.8 0 0 0 3.6 0V8.2A1.8 1.8 0 0 0 12 6.4z"/>
+<path d="M10.9 17.6h2.2v4.6h-2.2z"/>
+<path d="M7.6 20h8.8v2.2H7.6z"/>
+<g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+ <path d="M4.9 6.3a7.6 7.6 0 0 0 0 9.4"/>
+ <path d="M19.1 6.3a7.6 7.6 0 0 1 0 9.4"/>
+ <path d="M2 3.6a11.6 11.6 0 0 0 0 14.8"/>
+ <path d="M22 3.6a11.6 11.6 0 0 1 0 14.8"/>
+</g>
+</svg>

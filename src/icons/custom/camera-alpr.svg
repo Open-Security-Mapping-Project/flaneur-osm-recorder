@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" role="img" aria-label="Automatic license plate reader">
+<title>Automatic license plate reader</title>
+<path d="M7.4 1h9.8v1.4H7.4z"/>
+<path fill-rule="evenodd" d="M7 2.4h9.6a1.6 1.6 0 0 1 1.6 1.6v3.4a1.6 1.6 0 0 1-1.6 1.6H7a1.6 1.6 0 0 1-1.6-1.6V4A1.6 1.6 0 0 1 7 2.4z
+ M14.6 4a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 1 0 0-3.4z"/>
+<path d="M10.9 9h2.2v2.6h-2.2z"/>
+<path fill-rule="evenodd" d="M3.6 12.4h16.8a1.6 1.6 0 0 1 1.6 1.6v6.4a1.6 1.6 0 0 1-1.6 1.6H3.6A1.6 1.6 0 0 1 2 20.4V14a1.6 1.6 0 0 1 1.6-1.6z
+ M4 14.2h16v6H4z
+ M5.9 15.6h2v3.2h-2z M9.2 15.6h2v3.2h-2z M12.5 15.6h2v3.2h-2z M15.8 15.6h2v3.2h-2z"/>
+</svg>

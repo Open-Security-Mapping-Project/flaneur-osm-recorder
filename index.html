@@ -9,7 +9,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Flaneur" />
+  <!-- Browser tab icon. The manifest icons below only ever apply to an
+       INSTALLED PWA, so without these the tab fell back to a blank page glyph
+       in normal browser use. SVG first for the crisp version; the 192 PNG is
+       the fallback for browsers that will not take an SVG favicon (Safari). -->
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
   <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="mask-icon" href="./favicon.svg" color="#00ffe5" />
   <!-- The manifest link is injected at build time by vite-plugin-pwa. -->
   <title>Flaneur OSM Recorder</title>
 
@@ -209,7 +217,7 @@
     <div class="settings-title" data-i18n="settingsTitle">Settings</div>
 
     <div class="settings-row">
-      <label class="settings-label" data-i18n="settingsLanguage">Language</label>
+      <label class="settings-label" data-i18n="settingsLanguage">Language / Country</label>
       <select id="select-language" class="settings-select" augmented-ui="tl-clip br-clip exe"></select>
     </div>
 

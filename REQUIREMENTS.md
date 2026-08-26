@@ -230,18 +230,19 @@ while they move about.* These requirements exist to earn that.
 
 Carried forward as of this revision.
 
-| # | Item                                   | Severity | Notes |
-|---|----------------------------------------|---|---|
+| # | Item                                   | Severity | Notes                                                                                                                                                                                |
+|---|----------------------------------------|---|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | D1 | Photos stored base64 in `localStorage` | **High** | A few camera photos can exhaust the quota and block node saving. Must move to IndexedDB before photos are promoted as a feature. Until then the UI should discourage heavy photo use. |
-| D2 | No photo review/removal UI             | Medium | Photos can be attached but not viewed or detached before saving. |
-| D3 | No session picker                      | Medium | Only "new" or "most recent with data". Older sessions are retained and exportable in principle but not reachable from the UI. |
-| D4 | Tile pre-caching is on-demand only     | Medium | A "cache this area" control is needed for genuine offline surveying. |
-| D5 | Full tag editing deferred to JOSM      | Low | Deliberate. Only the note field is editable in-app. |
-| D6 | No existing-OSM-data overlay           | Low | Overpass integration planned so surveyors can see what is already mapped. |
-| D7 | Non-English locales are stubs          | Low | fr/de/es carry a handful of keys and fall back to English for the rest. |
-| D8 | No automated browser/E2E test          | Low | Storage logic is unit-tested; UI flows are manual. |
-| D9 | PWA not really tested                  | Low | The PWA feature has not been reviewed. |
-
+| D2 | No photo review/removal UI             | Medium | Photos can be attached but not viewed or detached before saving.                                                                                                                     |
+| D3 | No session picker                      | Medium | Only "new" or "most recent with data". Older sessions are retained and exportable in principle but not reachable from the UI.                                                        |
+| D4 | Tile pre-caching is on-demand only     | Medium | A "cache this area" control is needed for genuine offline surveying.                                                                                                                 |
+| D5 | Full tag editing deferred to JOSM      | Low | Deliberate. Only the note field is editable in-app.                                                                                                                                  |
+| D6 | No existing-OSM-data overlay           | Low | Overpass integration planned so surveyors can see what is already mapped.                                                                                                            |
+| D7 | Non-English locales are stubs          | Low | fr/de/es carry a handful of keys and fall back to English for the rest.                                                                                                              |
+| D8 | No automated browser/E2E test          | Low | Storage logic is unit-tested; UI flows are manual.                                                                                                                                   |
+| D9 | PWA not really tested                  | Low | The PWA feature has not been reviewed.                                                                                                                                               |
+| D10 | The first click of sound is loud.      | Low | When you first tap a preset it, it is louder than the subsequent.                                                                                                                    |
+| D11 | Resuming a session is ambiguous       | Low | The user must decide whether to resume the last session or start a new one. But it also sometimes says that it is restarting the session anyway. Which I think is okay but the buttons should not be presented in the same fashion then. 
 ---
 
 ## 10. Release checklist

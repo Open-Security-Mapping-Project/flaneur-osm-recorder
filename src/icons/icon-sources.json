@@ -1,0 +1,129 @@
+{
+  "_comment": [
+    "Provenance manifest for every icon shipped in src/icons/.",
+    "",
+    "This file is the authority for three things:",
+    "  1. tools/fetch-icons.mjs  — what to download and how to normalise it",
+    "  2. tools/build-credits.mjs — the attribution block in README.md",
+    "  3. tests/icons.test.mjs   — that presets, manifest and disk agree",
+    "",
+    "Every set here is GPL-3.0-or-later compatible. Do not add a set without",
+    "reading its own LICENSE file first — see README 'Icon credits'.",
+    "",
+    "'grid' is the upstream viewBox size. The fetch script scales each icon to",
+    "a 24x24 viewBox so all sets share one optical size. A set's grid is not",
+    "always uniform — see 'gridOverrides' — so the fetch script refuses to",
+    "write an icon whose real viewBox disagrees with what is declared here."
+  ],
+
+  "gridOverrides": {
+    "temaki:atm": 50
+  },
+
+  "sets": {
+    "temaki": {
+      "name": "Temaki (rapideditor)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "homepage": "https://github.com/rapideditor/temaki",
+      "raw": "https://raw.githubusercontent.com/rapideditor/temaki/main/icons/{id}.svg",
+      "blob": "https://github.com/rapideditor/temaki/blob/main/icons/{id}.svg",
+      "grid": 15,
+      "note": "What the iD editor uses for OSM presets — the best semantic match for street furniture. Public domain dedication; attribution is courtesy, not obligation."
+    },
+    "maki": {
+      "name": "Maki (Mapbox)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "homepage": "https://github.com/mapbox/maki",
+      "raw": "https://raw.githubusercontent.com/mapbox/maki/main/icons/{id}.svg",
+      "blob": "https://github.com/mapbox/maki/blob/main/icons/{id}.svg",
+      "grid": 15,
+      "note": "Public domain dedication; attribution is courtesy, not obligation. Kartographer and Iconify's 'maki' collection are this set re-hosted — pull from mapbox/maki directly."
+    },
+    "mdi": {
+      "name": "Material Design Icons (Pictogrammers)",
+      "license": "Apache-2.0",
+      "licenseUrl": "https://www.apache.org/licenses/LICENSE-2.0",
+      "homepage": "https://pictogrammers.com/library/mdi/",
+      "raw": "https://raw.githubusercontent.com/Templarian/MaterialDesign-SVG/master/svg/{id}.svg",
+      "blob": "https://pictogrammers.com/library/mdi/icon/{id}/",
+      "grid": 24,
+      "note": "Apache-2.0 REQUIRES that this attribution notice be retained in distributions. Keep the icon credits section in README.md."
+    },
+    "custom": {
+      "name": "Flaneur surveillance set (this repo)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "homepage": "src/icons/custom/",
+      "raw": null,
+      "blob": null,
+      "grid": 24,
+      "note": "Original work, dedicated to the public domain. Drawn for this project because no freely-licensed set anywhere ships a dome, PTZ, ALPR, thermal or acoustic-sensor camera. Authored by hand, NOT fetched — tools/fetch-icons.mjs skips this set. Several of these icons stroke as well as fill, so style them with `color:`, never `fill:` alone."
+    }
+  },
+
+  "icons": [
+    "temaki:atm",
+    "temaki:bench",
+    "temaki:bicycle_box",
+    "temaki:bicycle_locker",
+    "temaki:bicycle_parked",
+    "temaki:bicycle_rental",
+    "temaki:bicycle_repair",
+    "temaki:bollard",
+    "temaki:crossing_markings-ladder",
+    "temaki:kerb-lowered",
+    "temaki:kerb-raised",
+    "temaki:manhole",
+    "temaki:mast_lighting",
+    "temaki:post_box",
+    "temaki:power_device",
+    "temaki:power_meter",
+    "temaki:power_pole",
+    "temaki:power_tower",
+    "temaki:power_transformer",
+    "temaki:speed_bump",
+    "temaki:street_lamp_arm",
+    "temaki:traffic_signals",
+    "temaki:transit_shelter",
+    "temaki:utility_pole",
+    "temaki:water_manhole",
+    "temaki:wind_turbine",
+
+    "maki:defibrillator",
+    "maki:drinking-water",
+    "maki:emergency-phone",
+    "maki:information",
+    "maki:recycling",
+    "maki:toilet",
+
+    "mdi:bus-stop",
+    "mdi:cash-clock",
+    "mdi:dots-grid",
+    "mdi:factory",
+    "mdi:fire-hydrant",
+    "mdi:locker",
+    "mdi:map-marker",
+    "mdi:map-marker-alert",
+    "mdi:pump",
+    "mdi:road-variant",
+    "mdi:slope-uphill",
+    "mdi:solar-panel",
+    "mdi:table-picnic",
+    "mdi:trash-can",
+    "mdi:view-sequential-outline",
+    "mdi:waves",
+
+    "custom:acoustic-sensor",
+    "custom:camera-360",
+    "custom:camera-alpr",
+    "custom:camera-bullet",
+    "custom:camera-dome",
+    "custom:camera-dome-pole",
+    "custom:camera-indoor",
+    "custom:camera-ptz",
+    "custom:camera-thermal",
+    "custom:camera-unknown"
+  ]
+}

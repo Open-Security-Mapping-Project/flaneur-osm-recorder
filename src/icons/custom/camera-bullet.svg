@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" role="img" aria-label="Fixed directional camera">
+<title>Fixed directional camera</title>
+<path d="M1.4 3.2h2.3v9.6H1.4z"/>
+<path d="M3.7 7.1h2.4v1.9H3.7z"/>
+<path d="M7.4 2.2h12.4v1.6H7.4z"/>
+<path fill-rule="evenodd" d="M7 3.8h11.2a1.7 1.7 0 0 1 1.7 1.7v5.2a1.7 1.7 0 0 1-1.7 1.7H7a1.7 1.7 0 0 1-1.7-1.7V5.5A1.7 1.7 0 0 1 7 3.8z
+ M16.6 6.1a2 2 0 1 0 0 4 2 2 0 1 0 0-4z"/>
+<path d="M20.4 5.4h2.2v5.4h-2.2z"/>
+</svg>

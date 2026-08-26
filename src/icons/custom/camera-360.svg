@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor" role="img" aria-label="360 omnidirectional camera">
+<title>360 omnidirectional camera</title>
+<path fill-rule="evenodd" d="M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18z
+ M12 5.4a6.6 6.6 0 1 1 0 13.2 6.6 6.6 0 1 1 0-13.2z"/>
+<path d="M12 8.6a3.4 3.4 0 1 0 0 6.8 3.4 3.4 0 1 0 0-6.8z"/>
+<path d="M11 .3h2v2.2h-2zM11 21.5h2v2.2h-2zM.3 11h2.2v2H.3zM21.5 11h2.2v2h-2.2z"/>
+</svg>

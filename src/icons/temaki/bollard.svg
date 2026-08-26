@@ -1,0 +1,7 @@
+<!-- temaki:bollard — CC0-1.0 — https://github.com/rapideditor/temaki/blob/main/icons/bollard.svg
+     Vendored by tools/fetch-icons.mjs. Do not hand-edit; edit the manifest and re-fetch. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+  <g transform="scale(1.6)">
+    <path d="M5 3.5C5 -0.5 10 -0.5 10 3.5C10 4 5 4 5 3.5zM5 4C5 3.5 5 13.5 5 14C5 14.5 10 14.5 10 14C10 13.5 10 3.5 10 4C10 4.5 5 4.5 5 4z"/>
+  </g>
+</svg>
