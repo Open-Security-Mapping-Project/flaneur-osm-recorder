@@ -93,21 +93,12 @@ export class DirectionWidget {
     }
     this._render(initialDeg);
     this._el.removeAttribute('hidden');
-    // Drops Leaflet's controls below this overlay so the attribution box stops
-    // covering the Cancel / Set Direction buttons. See direction-widget.css.
-    this._host()?.classList.add('dir-widget-open');
     this._isOpen = true;
   }
 
   close() {
     this._el.setAttribute('hidden', '');
-    this._host()?.classList.remove('dir-widget-open');
     this._isOpen = false;
-  }
-
-  /** The map pane this overlay is mounted in, when it is the map pane. */
-  _host() {
-    return this._el?.closest('#map-wrap');
   }
 
   toggle(initialDeg = null) {

@@ -164,6 +164,24 @@ body {
   height: 100%;
 }
 
+/*
+  Leaflet's control containers ship at z-index 1000, which is above every
+  overlay this app has: the attribution box painted over the settings panel
+  (900), over modals (1000), and over the direction wheel's own buttons, where
+  it also stole the taps meant for them.
+
+  Demoted once, here, rather than by lifting each of our overlays past it in
+  turn — that is a race nobody wins, and it would have put panels above modals
+  they open. 430 keeps the controls above Leaflet's own panes (400) and below
+  everything of ours (crosshair 450, map buttons 500+). The zoom control sits
+  in the bottom-right corner, clear of our map buttons, so nothing of ours
+  covers it.
+*/
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 430;
+}
+
 /* Leaflet attribution dark mode */
 .leaflet-control-attribution {
   background: rgba(7, 11, 20, 0.75) !important;

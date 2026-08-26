@@ -211,10 +211,13 @@ while they move about.* These requirements exist to earn that.
   flow relative to each other, never pinned at fixed pixel offsets from the
   pane's center, which pushes controls off the bottom as soon as the pane is
   shorter than the offset assumes. The dial scales with the pane.
-- **R6.8 (MUST)** No Leaflet control may cover an interactive overlay control.
-  Leaflet parks its control containers at `z-index: 1000`; anything of ours
-  that takes taps over the map must out-stack them for as long as it is open.
-  (The attribution box was covering the direction dial's own buttons.)
+- **R6.8 (MUST)** No Leaflet control may cover any UI of ours. Leaflet ships its
+  control containers at `z-index: 1000`, above every overlay this app has, so
+  the attribution box covered the direction dial's buttons (stealing their
+  taps) and floated over the settings panel. The containers are demoted once,
+  globally, to 430 — above Leaflet's own panes, below everything of ours.
+  Lifting our overlays past Leaflet instead is the wrong fix: it is a race with
+  a third-party stylesheet, and it pushes panels above the modals they open.
 - **R6.9 (SHOULD)** Feedback sounds are off by default (§2), and every sound is
   scheduled a fixed lead ahead of `AudioContext.currentTime` so its envelope
   renders from sample zero. Scheduling at `currentTime` discards the first
@@ -257,7 +260,8 @@ while they move about.* These requirements exist to earn that.
   1000, so its edit and delete modals are explicitly lifted to 1020 — a modal
   behind the thing that launched it is a dead end. Stack, low to high: map
   controls 450–650 · settings 900 · modals 1000 · node list 1010 · node list's
-  modals 1020 · toast 2000.
+  modals 1020 · toast 2000. Leaflet's own controls sit below all of it at 430
+  (R6.8).
 
 ---
 

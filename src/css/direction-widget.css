@@ -130,16 +130,10 @@
 }
 
 /*
-  Leaflet parks its control containers at z-index 1000 — well above this
-  overlay's 600 — so the "© OpenStreetMap contributors" box and the zoom
-  buttons painted on top of the dial's Cancel / Set Direction row and stole
-  taps meant for them. Demote the controls for as long as the dial is up; the
-  class is set by DirectionWidget.open() / close(), so ordinary map use keeps
-  Leaflet's own stacking untouched.
+  The attribution box used to cover this widget's Cancel / Set Direction row
+  and steal the taps meant for them. That is now handled for every overlay at
+  once — Leaflet's control containers are demoted to z-index 430 in index.css,
+  below anything of ours — so there is no widget-specific rule here.
 */
-#map-wrap.dir-widget-open .leaflet-top,
-#map-wrap.dir-widget-open .leaflet-bottom {
-  z-index: 400;
-}
 
 /* Map crosshair for center placement */
