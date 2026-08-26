@@ -10,28 +10,61 @@ default:
   # Node 22 LTS — Vite 8 requires ^20.19.0 || >=22.12.0 (see package.json engines).
   image: node:22-alpine
   before_script:
-    - npm ci
+    # Cache npm's download directory, not node_modules: `npm ci` deletes
+    # node_modules before installing, so caching it was pure overhead — which
+    # is why the job log showed "Failed to extract cache" and reinstalled
+    # anyway. --prefer-offline makes the restored cache actually save work.
+    - npm ci --cache .npm --prefer-offline
+  cache:
+    # Keyed on the lockfile, so the cache is reused until dependencies change
+    # and never goes stale. `pull-push` on the default; jobs that only consume
+    # it override with `pull`.
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+    policy: pull-push
 
 lint:
   stage: lint
+  # Node's browser-global surface shifts between majors (21+ adds a read-only
+  # `navigator`, 22+ can expose `localStorage`), so exercise both ends of the
+  # range declared in package.json "engines" plus the common LTS. A
+  # single-version pipeline missed exactly that breakage before.
+  parallel:
+    matrix:
+      # A bare tag, not a full image ref: this also feeds the cache key prefix,
+      # and a colon in a cache key is asking for trouble.
+      - NODE_TAG: ['20.19', '22', '24']
+  image: node:${NODE_TAG}-alpine
+  cache:
+    # Per-Node-major key: parallel matrix jobs would otherwise race on one
+    # shared cache entry and clobber each other.
+    key:
+      files:
+        - package-lock.json
+      prefix: node${NODE_TAG}
+    paths:
+      - .npm/
+    policy: pull-push
   script:
     - npm run lint:check
     - npm run format:check
     - npm test
-  cache:
-    key: node-modules
-    paths:
-      - node_modules/
 
 build:
   stage: build
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+    policy: pull
   script:
     - npm run build
   artifacts:
     paths:
       - dist/
     expire_in: 1 week
-  cache:
-    key: node-modules
-    paths:
-      - node_modules/

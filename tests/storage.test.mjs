@@ -44,8 +44,36 @@ class MockStorage {
   }
 }
 
-global.localStorage = new MockStorage();
-global.navigator = {};
+/**
+ * Install a browser global for the module under test.
+ *
+ * Plain assignment (`global.navigator = {}`) is not safe across Node versions:
+ * Node 21+ defines a real, getter-only `navigator`, so assigning to it throws
+ * "Cannot set property navigator of #<Object> which has only a getter". Node 22+
+ * can expose `localStorage` the same way. defineProperty with configurable:true
+ * works whether or not the global already exists, and stays reassignable for
+ * the tests that swap in a fresh MockStorage.
+ */
+function installGlobal(name, value) {
+  Object.defineProperty(globalThis, name, {
+    value,
+    configurable: true,
+    writable: true,
+  });
+}
+
+/** Swap in a fresh storage mock for the next scenario. */
+function useStorage(mock) {
+  installGlobal('localStorage', mock);
+  return mock;
+}
+
+useStorage(new MockStorage());
+
+// storage.js only ever reads `navigator.storage?.*`, so an empty stub is
+// enough. On Node 21+ the real navigator is already present and has no
+// `.storage`, which the optional chaining handles — leave it alone there.
+if (!('navigator' in globalThis)) installGlobal('navigator', {});
 
 const S = await import('../src/js/storage.js');
 
@@ -105,7 +133,7 @@ console.log('\nBUG 1 — node IDs must stay unique across a page reload');
 // ── BUG 2: "localStorage is not working" ───────────────────────────────────
 console.log('\nBUG 2 — an empty new session must not hide real data');
 {
-  localStorage = global.localStorage = new MockStorage();
+  useStorage(new MockStorage());
 
   const real = S.createSession();
   node(real, 'survey1');
@@ -132,7 +160,7 @@ console.log('\nBUG 2 — an empty new session must not hide real data');
 // ── Resume without prompting ───────────────────────────────────────────────
 console.log('\nResume — the active session comes back on launch');
 {
-  localStorage = global.localStorage = new MockStorage();
+  useStorage(new MockStorage());
   const s = S.createSession();
   node(s, 'a');
   const resumed = S.resumeActiveSession();
@@ -146,13 +174,13 @@ console.log('\nResume — the active session comes back on launch');
 // ── Quota exhaustion must not silently lose a node ─────────────────────────
 console.log('\nQuota — a rejected write must be reported, not swallowed');
 {
-  localStorage = global.localStorage = new MockStorage();
+  const store = useStorage(new MockStorage());
   const s = S.createSession();
   node(s, 'ok');
 
   let reported = null;
   S.onWriteError((d) => (reported = d));
-  global.localStorage.quota = 10; // no room for anything more
+  store.quota = 10; // no room for anything more
 
   const failed = withQuietErrors(() =>
     S.addNode(s, { lat: 1, lon: 2, accuracy: 1, tags: { x: 'nope' }, note: '' })
@@ -165,7 +193,7 @@ console.log('\nQuota — a rejected write must be reported, not swallowed');
 // ── Blocked storage (private mode) ─────────────────────────────────────────
 console.log('\nBlocked storage — detection must not throw');
 {
-  localStorage = global.localStorage = new MockStorage({ blocked: true });
+  useStorage(new MockStorage({ blocked: true }));
   check('isStorageAvailable() reports false instead of throwing', S.isStorageAvailable() === false);
   check(
     'getSessionsIndex() degrades to []',

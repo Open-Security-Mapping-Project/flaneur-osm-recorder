@@ -216,6 +216,13 @@ while they move about.* These requirements exist to earn that.
 - **R8.11 (SHOULD)** CI output stays legible: tests that exercise failure paths
   suppress their expected error logging, so a passing run contains no stack
   traces that could be mistaken for failures.
+- **R8.12 (MUST)** CI exercises both ends of the Node range declared in
+  `package.json` "engines". Node's browser-global surface changes between
+  majors — 21+ added a read-only `navigator`, 22+ can expose `localStorage` —
+  so a single-version pipeline will miss breakage that only appears on a
+  contributor's machine, or only on CI. Test harness code must install browser
+  globals with `Object.defineProperty`, never bare assignment, for the same
+  reason.
 
 ---
 

@@ -182,6 +182,43 @@ rebuilt so that a point which appears on screen is guaranteed to be on disk.
 - **CI actions bumped v4 → v7.** The v4 line targets Node 20, which GitHub has
   deprecated and force-runs on Node 24 with a warning on every job.
 - **`caniuse-lite` refreshed** (was 6 months stale). No target browser changes.
+- **Test harness no longer crashes on Node 21+.** It installed browser globals
+  by plain assignment (`global.navigator = {}`), which throws
+  `Cannot set property navigator of #<Object> which has only a getter` on Node
+  21 and later, where `navigator` is a real read-only global. Node 22+ can
+  expose `localStorage` the same way, so that assignment was equally fragile.
+  Both now go through `Object.defineProperty`, which works whether or not the
+  global already exists.
+- **ESLint 8 → 10, migrated to flat config.** ESLint 8 reached end-of-life.
+  `.eslintrc.cjs` is replaced by `eslint.config.js`, and the scripts drop the
+  `--ext` flag that flat config no longer accepts. Linting now also covers
+  `tests/` and the build configs, not just `src/`.
+  - The `eslint-config-prettier` ban is unchanged and restated in the new
+    config. The two formatting rules the old config had to switch off were
+    removed from ESLint's recommended set in ESLint 9, so those overrides are
+    simply gone. Verified empirically that ESLint is clean on Prettier-formatted
+    output.
+  - Browser and Node globals are listed explicitly rather than pulling in the
+    `globals` package: the app uses fifteen browser globals, so the dependency
+    would buy little, and an explicit list is stricter — a typo like `documnet`
+    is still caught. One new dev dependency was unavoidable, `@eslint/js`, which
+    holds the recommended ruleset that ESLint 10 no longer bundles; it is
+    first-party (OpenJS Foundation, same repository as ESLint) with zero
+    dependencies of its own.
+  - Node floor raised to `^20.19.0 || ^22.13.0 || >=24`, the intersection of
+    Vite 8's and ESLint 10's requirements.
+- **GitLab CI caching actually works now.** The pipeline cached `node_modules/`
+  while installing with `npm ci`, which deletes `node_modules` before it runs —
+  so the restored cache was discarded every time, and the log showed a bare
+  "Failed to extract cache". It now caches npm's download directory
+  (`npm ci --cache .npm --prefer-offline`), keyed on `package-lock.json`, with a
+  per-Node-version prefix so parallel matrix jobs cannot clobber each other's
+  entry. `.npm/` added to `.gitignore`.
+- **CI runs a Node matrix (20.19, 22, 24)** — both ends of the range declared in
+  `package.json` "engines", plus the common LTS. The `navigator` breakage above
+  was introduced and shipped precisely because the pipeline tested one version
+  while development happened on another; a matrix makes that class of bug
+  visible before merge. GitLab CI matches.
 - **Test output no longer interleaves stack traces into unrelated sections.**
   Several tests deliberately drive storage failure paths, which log to stderr;
   Node buffers stdout and stderr separately, so in CI a `QuotaExceededError`

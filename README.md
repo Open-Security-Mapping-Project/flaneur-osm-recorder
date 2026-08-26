@@ -79,7 +79,7 @@ NOTE: PWA has not really been tested.
 ## Development
 
 ### Prerequisites
-- Node.js ≥ 20.19 (or ≥ 22.12) — required by Vite 8
+- Node.js ≥ 20.19, ≥ 22.13, or ≥ 24 — floors set by Vite 8 and ESLint 10
 - npm ≥ 10
 
 ### Setup
@@ -103,7 +103,7 @@ npm run preview  # Preview the production build
 ### Lint, Format & Test
 
 ```bash
-npm run lint          # ESLint (auto-fix)
+npm run lint          # ESLint 10, flat config (auto-fix)
 npm run lint:check    # ESLint (no fix, CI-safe)
 npm run format        # Prettier (auto-fix)
 npm run format:check  # Prettier (no fix, CI-safe)
@@ -199,7 +199,7 @@ flaneur-osm-recorder/
 ├── REQUIREMENTS.md           # What the app must do — read before big changes
 ├── CLAUDE.md                 # Conventions for AI assistants / contributors
 ├── package.json
-├── .eslintrc.cjs
+├── eslint.config.js         # ESLint flat config (ESLint 9+ format)
 ├── .prettierrc
 └── LICENSE                   # GPL-3.0 + third-party notices
 ```

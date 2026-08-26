@@ -5,3 +5,7 @@ dist/
 .env
 .env.*
 .cert/*
+
+# npm download cache, written into the project dir by CI
+# (`npm ci --cache .npm`) so GitLab can cache it between jobs.
+.npm/

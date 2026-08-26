@@ -9,22 +9,34 @@ on:
 jobs:
   lint-and-build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both ends of the range declared in package.json "engines"
+        # (^20.19.0 || >=22.12.0), plus the LTS most contributors run.
+        #
+        # A matrix rather than one version, because Node's browser-global
+        # surface shifts between majors: Node 21+ added a read-only `navigator`
+        # and Node 22+ can expose `localStorage`. That broke the test harness on
+        # CI while it still passed on a developer machine running Node 20.
+        node-version: ['20.19', '22', '24']
+    name: node ${{ matrix.node-version }}
     steps:
       # Current action line. The v4 actions target Node 20, which GitHub has
       # deprecated and now force-runs on Node 24 with a warning on every job.
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          # Node 22 LTS. Vite 8 requires ^20.19.0 || >=22.12.0 — see
-          # the "engines" field in package.json.
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
       - run: npm run lint:check
       - run: npm run format:check
       - run: npm test
       - run: npm run build
+      # Publish one build; parallel matrix runs would collide on the name.
       - uses: actions/upload-artifact@v7
+        if: matrix.node-version == '22'
         with:
           name: dist
           path: dist/
