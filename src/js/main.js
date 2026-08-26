@@ -36,6 +36,13 @@ import { exportSession } from './export.js';
 import { GpsManager } from './gps.js';
 import { showToast, closeModal, openModal, escHtml } from './ui-utils.js';
 import { DirectionWidget, degreesToCardinal } from './direction-widget.js';
+import {
+  setSoundEnabled,
+  isSoundEnabled,
+  playRecordClick,
+  playDragTick,
+  playToggleBlip,
+} from './sound.js';
 import { registerHandlers } from './handlers.js';
 
 // ─── State ─────────────────────────────────────────────────────────────────
@@ -89,6 +96,7 @@ function init() {
   initDirectionWidget();
   applyAllStrings();
   registerHandlers();
+  initSound();
 
   onWriteError(handleStorageWriteError);
   checkStorageOnLaunch();
@@ -131,6 +139,9 @@ function showStorageBanner(msg) {
   if (!banner) return;
   banner.textContent = msg;
   banner.removeAttribute('hidden');
+  // The banner takes vertical space away from the map; re-measure immediately
+  // rather than leaving a stale size for Leaflet to correct later.
+  onMapResize();
 }
 
 function initMap() {
@@ -173,6 +184,21 @@ function onMapResize() {
   map?.invalidateSize();
 }
 
+let resizeTimer = null;
+
+/**
+ * Keep Leaflet's cached container size current.
+ *
+ * A phone's URL bar collapsing on scroll, or a rotation, changes the map
+ * container without any Leaflet-visible event. Re-measuring here keeps the
+ * size fresh continuously instead of letting a stale measurement accumulate
+ * and get applied — with a map-moving pan — at some later, arbitrary moment.
+ */
+export function handleViewportResize() {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(onMapResize, 150);
+}
+
 // ─── Crosshair reticle ─────────────────────────────────────────────────────
 
 function createCrosshair() {
@@ -192,12 +218,46 @@ function createCrosshair() {
   document.getElementById('map-wrap').appendChild(crosshair);
 }
 
+/**
+ * The geographic point actually drawn under the crosshair reticle.
+ *
+ * Deliberately NOT `map.getCenter()` after an `invalidateSize()`. That was the
+ * old approach and it caused the reported "the first crosshair node jogs away
+ * from the reticle, later ones are fine" bug: `invalidateSize()` defaults to
+ * `pan: true`, so when the container size has changed since Leaflet last
+ * measured it — a phone URL bar collapsing, the storage banner appearing, the
+ * session modal closing — it pans the map by the size delta before returning.
+ * `getCenter()` then reported a point the user never aimed at. It only ever
+ * happened once because the pan clears Leaflet's size-changed flag, leaving
+ * every later call a no-op.
+ *
+ * Reading the reticle's real rendered box and converting through
+ * `containerPointToLatLng()` is immune to stale sizing: it resolves against the
+ * pixel origin the visible tiles are currently drawn with, so it returns what
+ * the user is actually looking at, and it never moves the map.
+ */
+function crosshairLatLng() {
+  const crosshair = document.getElementById('map-crosshair');
+  const container = map.getContainer();
+
+  if (!crosshair || crosshair.hasAttribute('hidden')) return map.getCenter();
+
+  const mapBox = container.getBoundingClientRect();
+  const reticleBox = crosshair.getBoundingClientRect();
+
+  return map.containerPointToLatLng([
+    reticleBox.left + reticleBox.width / 2 - mapBox.left,
+    reticleBox.top + reticleBox.height / 2 - mapBox.top,
+  ]);
+}
+
 // ─── Direction widget ──────────────────────────────────────────────────────
 
 function initDirectionWidget() {
   directionWidget = new DirectionWidget({
     onConfirm: onDirectionConfirm,
     onCancel: onDirectionWidgetCancel,
+    onDrag: playDragTick,
   });
 }
 
@@ -413,6 +473,9 @@ function adoptSession(session, { renderNodes } = {}) {
   if (renderNodes) renderExistingNodes();
   if (!gps.isActive) gps.start();
   refreshStorageInfo();
+  // Building the preset grid changes the layout under the map. Re-measure now,
+  // while nothing is placed yet, rather than mid-survey.
+  onMapResize();
 }
 
 export function startNewSession() {
@@ -601,11 +664,9 @@ function recordNode(preset, note, photos) {
   let lat, lon, accuracy;
 
   if (placementMode === 'crosshair') {
-    // invalidateSize first so the geographic center matches the drawn reticle.
-    map.invalidateSize();
-    const center = map.getCenter();
-    lat = center.lat;
-    lon = center.lng;
+    const point = crosshairLatLng();
+    lat = point.lat;
+    lon = point.lng;
     accuracy = null;
   } else {
     const pos = gps.getCurrentPosition();
@@ -631,6 +692,7 @@ function recordNode(preset, note, photos) {
 
   addNodeMarker(node);
   if (navigator.vibrate) navigator.vibrate(60);
+  playRecordClick();
 
   const savedDir = pendingDirection;
   clearDirection();
@@ -823,6 +885,34 @@ export function clearAllSessions() {
   showToast(t('settingsCleared'), 'info');
 }
 
+/**
+ * Sound is off by default. This tool is used to survey surveillance
+ * infrastructure, sometimes where the surveyor would rather not draw attention
+ * (see REQUIREMENTS.md §2) — a phone that clicks on every saved node is a
+ * behavior the user should opt into, not discover in the field.
+ */
+function initSound() {
+  applySoundPref(getPref('soundEnabled', false));
+}
+
+function applySoundPref(on) {
+  setSoundEnabled(on);
+  const btn = document.getElementById('btn-settings-sound');
+  if (!btn) return;
+  btn.textContent = on ? t('soundOn') : t('soundOff');
+  btn.setAttribute('aria-pressed', String(on));
+  btn.classList.toggle('btn-ghost--active', on);
+}
+
+export function toggleSound() {
+  const on = !isSoundEnabled();
+  applySoundPref(on);
+  setPref('soundEnabled', on);
+  // Enabling is itself a user gesture, so this doubles as the unlock that lets
+  // iOS and Chrome start the AudioContext, and confirms it audibly.
+  if (on) playToggleBlip();
+}
+
 export function changeLanguage(code) {
   setLocale(code);
   setPref('locale', code);
@@ -831,6 +921,7 @@ export function changeLanguage(code) {
   updateLockButton();
   updatePlacementModeButton();
   updateNodeCount();
+  applySoundPref(isSoundEnabled()); // label is set in JS, not via data-i18n
 }
 
 /**

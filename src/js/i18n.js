@@ -222,6 +222,8 @@ const strings = {
     settingsClearYes: 'Delete Everything',
     settingsClearNo: 'Cancel',
     settingsLanguage: 'Language',
+    soundOn: '🔊 Sound On',
+    soundOff: '🔇 Sound Off',
     settingsAbout: 'About',
     settingsVersion: 'Version {version}',
     settingsLicense: 'GPL-3.0 — Source on GitHub',

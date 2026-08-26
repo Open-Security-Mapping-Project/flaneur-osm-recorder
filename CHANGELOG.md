@@ -35,6 +35,23 @@ rebuilt so that a point which appears on screen is guaranteed to be on disk.
   Markers are tracked in a `nodeMarkers` map keyed by node ID.
 - Node notes and preset labels are HTML-escaped in map popups and the node list.
 
+- **The first crosshair placement no longer jumps away from the reticle.** In
+  crosshair mode the recording path called `map.invalidateSize()` before reading
+  `map.getCenter()`, with a comment claiming this aligned the center with the
+  drawn reticle. It did the opposite. `invalidateSize()` defaults to
+  `pan: true`: when the container has resized since Leaflet last measured it —
+  a phone URL bar collapsing, the storage banner appearing, the session modal
+  closing — it pans the map by half the size delta and *then* returns, so
+  `getCenter()` reported somewhere the user never aimed. On a phone that is
+  easily 50+ pixels, tens of meters at survey zoom. Only the first placement was
+  affected, because the pan clears Leaflet's size-changed flag and every later
+  call short-circuits — which is exactly the reported "first one jogs over,
+  subsequent are fine". Placement now reads the reticle's actual rendered
+  position and converts it with `containerPointToLatLng()`, which resolves
+  against the pixel origin the visible tiles are drawn with, so the node lands
+  precisely under the crosshair and the map never moves. Container re-measuring
+  moved to `resize`/`orientationchange` handlers where it belongs.
+
 ### Fixed — release blockers
 
 - **The PWA could not be installed.** `public/` contained no icon files at all,
@@ -82,6 +99,16 @@ rebuilt so that a point which appears on screen is guaranteed to be on disk.
   Surveying" did the same thing there, which is a false choice. "Start
   Surveying" now spans the full modal width and turns green, reading as the
   affirmative go action rather than another step.
+- **Optional UI sounds**, with an enable/disable toggle under Export Data in the
+  settings menu: a soft click when a node is saved, and a light ratcheting
+  detent while dragging the direction dial (one tick per 3° crossed, rate
+  limited so a fast drag cannot machine-gun it). Synthesized with the Web Audio
+  API rather than shipping sample files — no new dependency, no binary assets
+  to precache, nothing to break offline, and no third-party license to track.
+  **Off by default**: this tool surveys surveillance infrastructure, sometimes
+  where the user would rather not draw attention (REQUIREMENTS.md §2), so an
+  audibly clicking phone should be opted into rather than discovered in the
+  field. One line in `initSound()` changes that default if you disagree.
 - **The launch session modal gained a "Show Tutorial [?]" option** and an
   attribution line: *"Flaneur is an Open Security Mapping Project web app. It is
   open source / GPLv3.0."* — linking the project name to the GitHub organization

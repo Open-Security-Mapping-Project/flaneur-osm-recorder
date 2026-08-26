@@ -41,21 +41,42 @@ export function degreesToCardinal(deg) {
   return dirs[idx];
 }
 
+/**
+ * Degrees of rotation per detent. The widget emits one onDrag tick each time
+ * the bearing crosses a step, which is what turns a continuous drag into a
+ * ratchet feel rather than an unbroken stream of events.
+ */
+const DRAG_DETENT_DEG = 3;
+
 export class DirectionWidget {
   /**
-   * @param {{ onConfirm: (deg: number) => void, onCancel: () => void }} opts
+   * @param {{
+   *   onConfirm: (deg: number) => void,
+   *   onCancel: () => void,
+   *   onDrag?: (deg: number) => void,
+   * }} opts
    */
-  constructor({ onConfirm, onCancel }) {
+  constructor({ onConfirm, onCancel, onDrag }) {
     this.onConfirm = onConfirm;
     this.onCancel = onCancel;
+    this.onDrag = onDrag ?? (() => {});
 
     this._deg = null; // null = no direction set yet
     this._dragging = false;
     this._el = null; // overlay DOM element
     this._svg = null;
     this._isOpen = false; // NEW: Track open state
+    this._lastDetent = null;
 
     this._build();
+  }
+
+  /** Fire onDrag only when the bearing crosses into a new detent. */
+  _emitDetent(deg) {
+    const detent = Math.round(deg / DRAG_DETENT_DEG);
+    if (detent === this._lastDetent) return;
+    this._lastDetent = detent;
+    this.onDrag(deg);
   }
 
   // ── Public API ─────────────────────────────────────────────────────────────
@@ -337,10 +358,12 @@ export class DirectionWidget {
       e.preventDefault();
       svg.setPointerCapture(e.pointerId);
       this._dragging = true;
+      this._lastDetent = null;
       const deg = getAngle(e);
       if (deg !== null) {
         this._deg = deg;
         this._render(deg);
+        this._emitDetent(deg);
       }
     });
 
@@ -351,6 +374,7 @@ export class DirectionWidget {
       if (deg !== null) {
         this._deg = deg;
         this._render(deg);
+        this._emitDetent(deg);
       }
     });
 

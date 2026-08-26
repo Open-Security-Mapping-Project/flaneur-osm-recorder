@@ -1265,3 +1265,10 @@ body {
 .btn-row [hidden] {
   display: none;
 }
+
+/* ── Active state for toggle-style ghost buttons (sound on/off) ──────── */
+.btn-ghost--active {
+  color: var(--accent);
+  --aug-border-bg: var(--accent-dim);
+  background: rgba(0, 255, 229, 0.06);
+}

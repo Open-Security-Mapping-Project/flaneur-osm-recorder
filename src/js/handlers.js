@@ -33,6 +33,8 @@ import {
   closeSettings,
   clearAllSessions,
   changeLanguage,
+  toggleSound,
+  handleViewportResize,
   openNodeList,
   closeNodeList,
   saveNodeEdit,
@@ -169,6 +171,14 @@ function onSettingsClear() {
   clearAllSessions();
 }
 
+function onSoundToggle() {
+  toggleSound();
+}
+
+function onWindowResize() {
+  handleViewportResize();
+}
+
 function onLanguageChange(e) {
   changeLanguage(e.target.value);
 }
@@ -258,7 +268,13 @@ export function registerHandlers() {
   bind('btn-settings-tutorial', 'click', onSettingsTutorial);
   bind('btn-settings-export', 'click', onSettingsExport);
   bind('btn-settings-clear', 'click', onSettingsClear);
+  bind('btn-settings-sound', 'click', onSoundToggle);
   bind('select-language', 'change', onLanguageChange);
+
+  // Viewport changes (phone URL bar collapsing, rotation) resize the map
+  // container without Leaflet noticing.
+  window.addEventListener('resize', onWindowResize);
+  window.addEventListener('orientationchange', onWindowResize);
 
   // Node list
   bind('btn-open-nodelist', 'click', onNodeListOpen);
