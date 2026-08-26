@@ -9,33 +9,66 @@
   inset: 0;
   z-index: 600;
   display: flex;
+  /*
+    Column flow, NOT absolute offsets from the center.
+    The readout and the button row used to be pinned at `bottom: calc(50% -
+    190px/-230px)`, distances measured off the full 300px dial. On a small
+    iPhone the map pane is barely taller than the dial itself, so 50% of it is
+    under 230px and the buttons landed *below* the pane — pushed off under the
+    preset grid. Stacking the three in flow means they cannot separate from the
+    dial however small it gets.
+  */
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 38%, rgba(7, 11, 20, 0.55) 100%);
+  background: radial-gradient(ellipse at center, transparent 38%, rgba(7, 11, 20, 0.85) 100%);
+  /*
+    One size for the dial, clamped on every axis that can run out: the design
+    size, the width of a narrow phone, and — the constraint that actually bites
+    on a small iPhone — the height of the map pane, which is roughly half the
+    viewport. The rest of the column needs about 90px under the dial.
+  */
+  --dial-size: min(300px, 88vw, 32vh);
 }
 
 #direction-widget[hidden] {
   display: none !important;
 }
 
+/* Open: swallow map interaction underneath. Closed, the overlay must not. */
+#direction-widget:not([hidden]) {
+  pointer-events: all;
+}
+
 #direction-widget svg {
   touch-action: none;
   cursor: crosshair;
-  /*filter: drop-shadow(0 0 18px rgba(0,255,229,0.35));*/
-  max-width: min(300px, 85vmin);
-  max-height: min(300px, 85vmin);
-  filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.67));
+  /*
+    Explicit square box. getAngle() in direction-widget.js scales the pointer
+    offset by 300/rect.width and 300/rect.height independently, so a letterboxed
+    non-square box would skew every bearing the user sets.
+  */
+  flex: none;
+  width: var(--dial-size);
+  height: var(--dial-size);
+  filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.97));
   /*drop-shadow(0 0 18px rgba(0,255,229,0.35));*/
 }
 
+#direction-widget svg text {
+  filter: drop-shadow(1px 1px 4px rgba(0, 0, 0, 0.9));
+}
+
+/* "DRAG TO SET", dropped by _render() as soon as a bearing exists. */
+.dir-drag-hint--hidden {
+  display: none;
+}
+
 #dir-readout {
-  position: absolute;
-  bottom: calc(50% - 190px);
-  left: 50%;
-  transform: translateX(-50%);
   font-family: 'Share Tech Mono', monospace;
-  font-size: 22px;
+  font-size: clamp(15px, 5vw, 22px);
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.1em;
@@ -47,10 +80,6 @@
 
 /* ── Action buttons ─────────────────────────────────────────────────────── */
 .dir-btn-row {
-  position: absolute;
-  bottom: calc(50% - 230px);
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   gap: 12px;
   pointer-events: all;
@@ -77,17 +106,20 @@
   border: 1px solid var(--accent, #00ffe5);
   --aug-border-bg: var(--accent, #00ffe5);
 }
+.dir-btn--primary:hover {
+  background: rgba(0, 255, 229, 0.9);
+}
 
 /* Cancel — red, because it discards the bearing you just set. */
 .dir-btn--cancel {
-  background: rgba(255, 60, 110, 0.12);
-  color: var(--accent2, #ff3c6e);
+  background: rgba(255, 60, 110, 0.72);
+  color: #000;
   border: 1px solid var(--accent2, #ff3c6e);
   --aug-border-bg: var(--accent2, #ff3c6e);
 }
 .dir-btn--cancel:hover,
 .dir-btn--cancel:active {
-  background: rgba(255, 60, 110, 0.28);
+  background: rgba(255, 60, 110, 0.98);
   opacity: 1;
 }
 
@@ -95,6 +127,19 @@
 .dir-btn--armed {
   opacity: 1;
   pointer-events: all;
+}
+
+/*
+  Leaflet parks its control containers at z-index 1000 — well above this
+  overlay's 600 — so the "© OpenStreetMap contributors" box and the zoom
+  buttons painted on top of the dial's Cancel / Set Direction row and stole
+  taps meant for them. Demote the controls for as long as the dial is up; the
+  class is set by DirectionWidget.open() / close(), so ordinary map use keeps
+  Leaflet's own stacking untouched.
+*/
+#map-wrap.dir-widget-open .leaflet-top,
+#map-wrap.dir-widget-open .leaflet-bottom {
+  z-index: 400;
 }
 
 /* Map crosshair for center placement */

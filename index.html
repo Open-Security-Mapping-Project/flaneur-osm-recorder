@@ -59,8 +59,21 @@
     <button id="btn-map-lock" class="map-btn" augmented-ui="tl-clip br-clip exe"
       data-i18n-title="mapLocked" title="Map locked to GPS">🔒</button>
     <!-- Map overlay buttons -->
+    <!--
+      The arrow is real SVG rather than the "⬆" character because main.js turns
+      it to the live bearing: a per-element rotation by a runtime value is the
+      documented SVG-transform exception to the no-inline-styles rule, and a
+      text glyph has no equivalent hook.
+    -->
     <button id="btn-direction" class="map-btn map-btn--direction" augmented-ui="tl-clip br-clip exe"
-            data-i18n-title="directionLabel" title="Direction" aria-label="Set direction">⬆</button>
+            data-i18n-title="directionLabel" title="Direction" aria-label="Set direction">
+      <svg class="dir-btn-glyph" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"
+           focusable="false">
+        <g id="dir-btn-arrow">
+          <path d="M12 2.5 L18.5 18.5 L12 15 L5.5 18.5 Z" />
+        </g>
+      </svg>
+    </button>
     <button id="btn-placement-mode" class="map-btn map-btn--placement" augmented-ui="tl-clip br-clip exe"
             data-i18n-title="placementGps" title="GPS mode: place at current location"
             aria-label="Toggle placement mode">📍</button>
@@ -79,8 +92,11 @@
   <div id="statusbar" aria-live="polite">
     <span id="status-coords">—</span>
     <span id="status-accuracy"></span>
-    <span id="status-node-count">0 nodes</span>
-    <button id="btn-statusbar-list" class="statusbar-list-btn" title="Review saved nodes" aria-label="Review saved nodes">⌃</button>
+    <!-- Count and caret travel together at the right edge — see .statusbar-nodes -->
+    <span class="statusbar-nodes">
+      <span id="status-node-count">0 nodes</span>
+      <button id="btn-statusbar-list" class="statusbar-list-btn" title="Review saved nodes" aria-label="Review saved nodes">⌃</button>
+    </span>
   </div>
 </div><!-- #app -->
 
@@ -88,7 +104,13 @@
 <div id="toast" role="alert" aria-live="assertive" augmented-ui="tl-clip br-clip exe"></div>
 
 <!-- ── Session Modal ──────────────────────────────────────────────── -->
-<div id="modal-session" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="session-modal-title">
+<!--
+  hidden by default: openSessionModal() opens it only when there is a genuine
+  choice to make. Without the attribute it was painted on every launch, and the
+  silent-resume path returned without closing it — so the chooser sat on top of
+  a session that had already been restored and drawn on the map.
+-->
+<div id="modal-session" class="modal-backdrop" hidden role="dialog" aria-modal="true" aria-labelledby="session-modal-title">
   <div class="modal-box" augmented-ui="tl-clip br-clip exe">
     <div class="modal-title" id="session-modal-title" data-i18n="sessionModalTitle">Session</div>
 
@@ -168,6 +190,20 @@
   <div class="modal-box" augmented-ui="tl-clip br-clip exe">
     <div class="modal-title" data-i18n="exportModalTitle">Export Session</div>
     <div class="modal-body">
+      <!-- What to export. The format buttons below act on whichever is chosen. -->
+      <div class="export-scope" role="group" aria-label="What to export">
+        <button id="btn-export-scope-session" class="export-scope-btn export-scope-btn--active"
+                augmented-ui="tl-clip br-clip exe" aria-pressed="true">
+          <span class="export-scope-title" data-i18n="exportScopeSession">This Session</span>
+          <span class="export-scope-desc" id="export-scope-session-info"></span>
+        </button>
+        <button id="btn-export-scope-all" class="export-scope-btn"
+                augmented-ui="tl-clip br-clip exe" aria-pressed="false">
+          <span class="export-scope-title" data-i18n="exportScopeAll">All Sessions</span>
+          <span class="export-scope-desc" id="export-scope-all-info"></span>
+        </button>
+      </div>
+
       <p class="export-session-line"><span id="export-session-info"></span></p>
 
       <button id="btn-export-osm" class="export-option" augmented-ui="tl-clip br-clip exe">
@@ -238,6 +274,9 @@
     <!-- Label is set by applySoundPref() in main.js, so no data-i18n here. -->
     <button id="btn-settings-sound" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
             aria-pressed="false">🔇 Sound Off</button>
+
+    <button id="btn-settings-newsession" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+            data-i18n="settingsNewSession">Start New Session</button>
 
     <button id="btn-settings-clear" class="btn-secondary" augmented-ui="tl-clip br-clip exe"
             data-i18n="settingsClearStorage">Clear All Sessions</button>

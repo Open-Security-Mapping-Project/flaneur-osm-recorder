@@ -45,8 +45,17 @@ body {
 #app {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  /*
+    Order matters and was inverted: the last declaration a browser understands
+    is the one it uses, so putting 100vh second meant every modern browser took
+    100vh and only ancient ones got 100dvh. On iOS 100vh is the *large*
+    viewport — it measures as though Safari's toolbars were not there — so the
+    app was laid out taller than the screen and the status bar spent its life
+    underneath the toolbar. 100dvh tracks the visible viewport; 100vh stays as
+    the genuine fallback beneath it.
+  */
   height: 100vh; /* fallback */
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -208,7 +217,14 @@ body {
   flex-direction: column;
   background: var(--bg-panel);
   border-top: 1px solid var(--border);
-  padding: 0 0 max(6px, env(safe-area-inset-bottom));
+  /*
+    Plain padding, no safe-area inset: #statusbar sits below this, so the inset
+    was being reserved in the middle of the column — a band of dead space
+    between the presets and the status row on exactly the notched phones that
+    have the least height to spare. The inset belongs to the last row, and
+    #statusbar now carries it.
+  */
+  padding: 0 0 6px;
 }
 
 /* Mode tabs */
@@ -308,21 +324,42 @@ body {
 
 /* ── Status bar ──────────────────────────────────────────────────────── */
 #statusbar {
+  /*
+    Never let the map squeeze this row away, and keep it clear of the home
+    indicator on a notched phone — in a standalone PWA the viewport runs right
+    to the bottom edge of the screen.
+  */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 3px 10px;
+  gap: 10px;
+  padding: 4px 10px;
+  padding-bottom: max(4px, env(safe-area-inset-bottom));
   background: var(--bg);
   border-top: 1px solid var(--border);
   font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--text-dim);
+  line-height: 1.4;
 }
 #status-coords {
   color: var(--accent-dim);
 }
 #status-accuracy {
   transition: color 0.3s;
+}
+/*
+  Count and disclosure caret are one control in effect — the caret opens the
+  list of exactly the nodes the count is counting. Grouping them at the right
+  edge, in the same yellow, is what makes that readable; the count used to sit
+  mid-row in a space-between layout, adrift from the caret it belongs to.
+*/
+.statusbar-nodes {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent3);
 }
 #status-node-count {
   color: var(--accent3);
@@ -455,6 +492,21 @@ body {
   cursor: not-allowed;
   pointer-events: none;
 }
+/*
+  The launch options are not equivalent — one continues work already on the
+  device, the other starts an empty export — so they must not read as two
+  identical buttons. openSessionModal() puts this on whichever is the likely
+  intent, and leaves the other in the plain treatment above.
+*/
+.session-option--primary {
+  background: rgba(0, 255, 229, 0.1);
+  --aug-border-all: 2px;
+  --aug-border-bg: var(--accent);
+}
+.session-option--primary:hover {
+  background: rgba(0, 255, 229, 0.16);
+  --aug-border-bg: var(--accent);
+}
 .session-option-title {
   font-family: 'Share Tech Mono', monospace;
   font-size: 13px;
@@ -503,6 +555,60 @@ body {
 }
 
 /* Export modal */
+/*
+  Export scope picker — "this session" vs "all sessions". Two halves of one
+  control, so the choice reads as a switch rather than as two more actions in a
+  modal that is already a list of buttons.
+*/
+.export-scope {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.export-scope-btn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  text-align: left;
+  color: var(--text-dim);
+  --aug-tl: 6px;
+  --aug-br: 6px;
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--border);
+}
+.export-scope-btn:hover {
+  background: rgba(0, 255, 229, 0.06);
+}
+.export-scope-btn--active {
+  background: rgba(0, 255, 229, 0.1);
+  color: var(--text);
+  --aug-border-all: 2px;
+  --aug-border-bg: var(--accent);
+}
+.export-scope-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.export-scope-title {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+}
+.export-scope-btn[disabled] .export-scope-title {
+  color: var(--text-dim);
+}
+.export-scope-desc {
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
 .export-option {
   display: flex;
   flex-direction: column;
@@ -754,6 +860,24 @@ body {
   filter: drop-shadow(0 0 4px rgba(255, 60, 110, 0.6));
 }
 
+/*
+  The arrow inside #btn-direction. Only the glyph turns — rotating the button
+  itself would drag its augmented-ui clip corners and border around with it.
+  The rotation is a transform attribute set by main.js; the transition is here
+  so a confirmed bearing eases into place instead of jumping.
+*/
+.dir-btn-glyph {
+  fill: currentColor;
+}
+/*
+  No transform-origin here: the attribute main.js writes is the SVG three-value
+  rotate(deg, cx, cy), which carries its own center — a CSS transform-origin
+  would only fight it.
+*/
+.dir-btn-glyph g {
+  transition: transform 0.12s linear;
+}
+
 /* Direction map overlay button */
 #btn-direction {
   bottom: 134px;
@@ -829,18 +953,20 @@ body {
 .statusbar-list-btn {
   background: none;
   border: none;
-  color: var(--accent-dim);
+  /* Same yellow as the node count it sits beside — see .statusbar-nodes. */
+  color: var(--accent3);
+  opacity: 0.85;
   font-size: 14px;
   cursor: pointer;
   padding: 0 2px;
   line-height: 1;
   transition:
-    color 0.15s,
+    opacity 0.15s,
     transform 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
 .statusbar-list-btn:hover {
-  color: var(--accent);
+  opacity: 1;
   transform: translateY(-1px);
 }
 

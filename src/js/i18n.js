@@ -51,6 +51,9 @@ const strings = {
     sessionLastInfo: 'Last session: {count} nodes on {date}',
     sessionNoExisting: 'No previous session found.',
     sessionResumed: 'Resumed your last session — {count} nodes still saved.',
+    sessionNewConfirm:
+      'Start a new, empty session? The current one keeps its {count} nodes and stays on this device — reopen it with "Append to Last Session".',
+    sessionNewStarted: 'New session started — 0 nodes.',
     sessionTutorial: 'Show Tutorial [?]',
     sessionTutorialDesc: 'Helpful messages',
     // Assembled inline around two links — see the session modal in index.html.
@@ -95,7 +98,10 @@ const strings = {
     directionSet: 'Direction: {deg}° {cardinal}',
     directionNotSet: 'Not set',
     directionCleared: 'Direction cleared.',
+    directionPickFirst: 'Tap a direction on the wheel to set a direction, or select Cancel.',
     summaryNote: 'note',
+    // Shown after a camera's bearing to say it carries to the next node.
+    summaryDirectionHeld: 'dir held',
 
     // Placement mode
     placementGps: 'GPS mode: place at current location',
@@ -225,12 +231,23 @@ const strings = {
     exportGeoJsonHint: 'For use in GIS tools, QGIS, etc.',
     exportFilename: 'flaneur_{date}',
     exportEmpty: 'No nodes in current session yet.',
-    exportPhotoNote: 'Note: Photos are not embedded in exports. See photo workflow in help.',
+    // Export scope picker
+    exportScopeSession: 'This Session',
+    exportScopeAll: 'All Sessions',
+    exportScopeSessionInfo: '{count} nodes',
+    exportScopeAllInfo: '{nodes} nodes in {sessions} sessions',
+    exportScopeAllNone: 'Nothing else saved',
+    exportScopeAllNote:
+      'All saved sessions in one file. Node ids are renumbered so JOSM loads them as one layer.',
+    exportEmptyAll: 'No saved sessions have any nodes yet.',
+    exportPhotoNote:
+      'Note: Photos are not embedded in exports. See photo workflow in tutorial. (This feature is in development)',
 
     // Settings / gear menu
     settingsTitle: 'Settings',
     settingsTutorial: 'Show Tutorial',
     settingsDownload: 'Export Data',
+    settingsNewSession: 'Start New Session',
     settingsClearStorage: 'Clear All Sessions',
     settingsClearConfirm: 'Delete ALL saved sessions? This cannot be undone.',
     settingsClearYes: 'Delete Everything',

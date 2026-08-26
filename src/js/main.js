@@ -32,8 +32,9 @@ import {
   requestPersistentStorage,
   getStorageHealth,
   onWriteError,
+  loadAllSessions,
 } from './storage.js';
-import { exportSession } from './export.js';
+import { exportSession, mergeSessions } from './export.js';
 import { GpsManager } from './gps.js';
 import { showToast, closeModal, openModal, escHtml } from './ui-utils.js';
 import { DirectionWidget, degreesToCardinal } from './direction-widget.js';
@@ -43,6 +44,7 @@ import {
   playRecordClick,
   playDragTick,
   playToggleBlip,
+  unlockAudio,
 } from './sound.js';
 import { registerHandlers } from './handlers.js';
 
@@ -65,6 +67,7 @@ let directionWidget = null;
 let storageWritable = true;
 let noteModalOpen = false;
 let gpsToggledByUser = false;
+let exportScope = 'session'; // 'session' | 'all' — what the export modal acts on
 
 const nodeMarkers = new Map(); // node id → Leaflet marker
 const TUTORIAL_TOTAL = 6;
@@ -271,8 +274,15 @@ function initDirectionWidget() {
   directionWidget = new DirectionWidget({
     onConfirm: onDirectionConfirm,
     onCancel: onDirectionWidgetCancel,
-    onDrag: playDragTick,
+    onEmptyConfirm: onDirectionNotChosen,
+    onDrag: onDirectionDrag,
   });
+}
+
+/** Each detent of the wheel: click, and turn the button's arrow to match. */
+function onDirectionDrag(deg) {
+  playDragTick();
+  setDirectionArrow(deg);
 }
 
 function onDirectionConfirm(deg) {
@@ -284,6 +294,11 @@ function onDirectionConfirm(deg) {
     t('directionSet', { deg: Math.round(deg), cardinal: degreesToCardinal(deg) }),
     'success'
   );
+}
+
+/** Confirm tapped before any bearing was picked — say what it is waiting for. */
+function onDirectionNotChosen() {
+  showToast(t('directionPickFirst'), 'info');
 }
 
 /**
@@ -306,7 +321,23 @@ function restoreNoteModal() {
   if (noteModalOpen && pendingPreset) openModal('modal-note');
 }
 
+/**
+ * Turn the arrow on the direction button to `deg`, or back to north when it is
+ * null. Tying the button to the bearing it controls is what makes the two read
+ * as the same thing, and it gives live feedback while the wheel is dragged.
+ *
+ * The rotation is written as an SVG transform attribute — the documented
+ * exception in CLAUDE.md, because a per-element rotation by a runtime value
+ * cannot be a static class. One attribute, nothing else.
+ */
+function setDirectionArrow(deg) {
+  const arrow = document.getElementById('dir-btn-arrow');
+  if (!arrow) return;
+  arrow.setAttribute('transform', `rotate(${Math.round(deg ?? 0)}, 12, 12)`);
+}
+
 function updateDirectionBadge(deg) {
+  setDirectionArrow(deg);
   const badge = document.getElementById('direction-badge');
   if (!badge) return;
   if (deg === null) {
@@ -336,6 +367,9 @@ export function clearDirection() {
 
 export function toggleDirectionWidget() {
   directionWidget.toggle(pendingDirection);
+  // Dismissing the wheel without confirming abandons whatever was dragged, so
+  // put the arrow back on the bearing that is actually pending.
+  if (!directionWidget.isOpen()) setDirectionArrow(pendingDirection);
 }
 
 /** Open the direction widget from inside the note modal. */
@@ -456,17 +490,19 @@ function updatePresetGridReadiness() {
 function openSessionModal() {
   const resumed = resumeActiveSession();
   if (resumed) {
-    adoptSession(resumed, { renderNodes: true });
+    adoptSession(resumed);
     showToast(t('sessionResumed', { count: resumed.nodes.length }), 'info');
     maybeShowTutorial();
     return;
   }
 
   const lastSession = getLastSession();
+  const newBtn = document.getElementById('btn-session-new');
   const appendBtn = document.getElementById('btn-session-append');
   const appendInfo = document.getElementById('session-append-info');
+  const hasLast = !!lastSession && lastSession.nodes.length > 0;
 
-  if (lastSession && lastSession.nodes.length > 0) {
+  if (hasLast) {
     appendBtn.removeAttribute('disabled');
     appendInfo.textContent = t('sessionLastInfo', {
       count: lastSession.nodes.length,
@@ -477,14 +513,28 @@ function openSessionModal() {
     appendInfo.textContent = t('sessionNoExisting');
   }
 
+  // The two options are not equivalent and must not look it: continuing work
+  // already on the device is the safe default, while "new" discards nothing
+  // but starts an empty export. Whichever is the likely intent is the one
+  // drawn as primary.
+  newBtn?.classList.toggle('session-option--primary', !hasLast);
+  appendBtn?.classList.toggle('session-option--primary', hasLast);
+
   openModal('modal-session');
 }
 
-function adoptSession(session, { renderNodes } = {}) {
+/**
+ * Make `session` the one being recorded into, and make the screen show it.
+ *
+ * renderExistingNodes() runs unconditionally, including for an empty new
+ * session, because it is also what clears the markers of whichever session was
+ * on the map before.
+ */
+function adoptSession(session) {
   currentSession = session;
   renderPresetGrid(activeMode);
   updateNodeCount();
-  if (renderNodes) renderExistingNodes();
+  renderExistingNodes();
   if (!gps.isActive) gps.start();
   refreshStorageInfo();
   // Building the preset grid changes the layout under the map. Re-measure now,
@@ -492,16 +542,62 @@ function adoptSession(session, { renderNodes } = {}) {
   onMapResize();
 }
 
+/**
+ * Start an empty session, discarding nothing.
+ *
+ * "New" has to mean new on screen as well as in storage: the map keeps its
+ * markers in a module-level Map, and a half-finished note or bearing survives
+ * in module state, so without this reset the previous session's nodes stayed
+ * drawn over an empty session — and, because node ids restart at -1 per
+ * session, the first node recorded into the new session collided with a
+ * leftover marker id and never appeared.
+ */
 export function startNewSession() {
+  resetPendingCapture();
   adoptSession(createSession());
   closeModal('modal-session');
   maybeShowTutorial();
 }
 
+/** Drop anything staged for a node that was never saved. */
+function resetPendingCapture() {
+  pendingPreset = null;
+  pendingPhotos = [];
+  noteModalOpen = false;
+  editingNodeId = null;
+  deletingNodeId = null;
+  deletingRow = null;
+  clearDirection();
+  directionWidget?.close();
+  closeModal('modal-note');
+  closeModal('modal-nodeedit');
+  closeModal('modal-nodedelete');
+  closeNodeList();
+}
+
+/**
+ * Start a new session from the settings panel, mid-survey.
+ *
+ * Without this the launch chooser was the only way to start one, and it is
+ * skipped entirely once the active session holds nodes — so a surveyor who had
+ * recorded anything could never begin a second survey without clearing all
+ * their data. The existing session is left on the device and stays exportable
+ * via "Append to Last Session" on the next launch.
+ */
+export function newSessionFromSettings() {
+  const count = currentSession?.nodes.length ?? 0;
+  if (count > 0 && !confirm(t('sessionNewConfirm', { count }))) return;
+
+  closeSettings();
+  startNewSession();
+  showToast(t('sessionNewStarted'), 'info');
+}
+
 export function appendToLastSession() {
   const last = getLastSession();
   if (!last) return;
-  adoptSession(last, { renderNodes: true });
+  resetPendingCapture();
+  adoptSession(last);
   closeModal('modal-session');
 }
 
@@ -725,7 +821,13 @@ function recordNode(preset, note, photos) {
   playRecordClick();
 
   const savedDir = pendingDirection;
-  clearDirection();
+  // A camera node holds its bearing for the next one. Surveying a run of
+  // cameras along a street means recording several that face the same way, and
+  // re-setting the wheel between each was the cost of a rule written for
+  // one-off bearings. Anything without camera:direction still clears, so a
+  // bearing is never silently reused by an unrelated preset. The top-bar badge
+  // and the direction button's arrow are what keep a held bearing visible.
+  if (node.tags['camera:direction'] == null) clearDirection();
 
   showToast(
     buildRecordSummary(preset, node, savedDir),
@@ -753,6 +855,9 @@ function buildRecordSummary(preset, node, direction) {
     // so flag which convention this node uses.
     const key = node.tags['camera:direction'] != null ? 'cam' : 'dir';
     parts.push(`${key} ${deg}° ${degreesToCardinal(direction)}`);
+    // Say when the bearing is being kept for the next node, so a held
+    // direction is never a surprise on the following camera.
+    if (node.tags['camera:direction'] != null) parts.push(t('summaryDirectionHeld'));
   }
 
   if (node.accuracy_m != null) {
@@ -882,19 +987,91 @@ function updateLockButton() {
 // ─── Export ────────────────────────────────────────────────────────────────
 
 export function openExportModal() {
-  const info = document.getElementById('export-session-info');
-  if (info && currentSession) {
-    info.textContent = t('nodeCount', { count: currentSession.nodes.length });
-  }
+  // Always reopen on the current session. "All sessions" is the deliberate
+  // choice, never the one a distracted tap inherits from last time.
+  exportScope = 'session';
+  renderExportScope();
   openModal('modal-export');
 }
 
+/**
+ * Fill in both scope buttons with what they would actually export, and mark
+ * the chosen one. The counts are the point: without them "All Sessions" is a
+ * blind choice, and the reason older sessions felt unreachable is that nothing
+ * in the UI ever admitted they existed.
+ */
+function renderExportScope() {
+  const sessionCount = currentSession?.nodes.length ?? 0;
+  const others = loadAllSessions();
+  const otherNodes = others.reduce((sum, session) => sum + session.nodes.length, 0);
+  const hasOthers = others.length > 0;
+
+  const sessionInfo = document.getElementById('export-scope-session-info');
+  if (sessionInfo) sessionInfo.textContent = t('exportScopeSessionInfo', { count: sessionCount });
+
+  const allInfo = document.getElementById('export-scope-all-info');
+  if (allInfo) {
+    allInfo.textContent = hasOthers
+      ? t('exportScopeAllInfo', { nodes: otherNodes, sessions: others.length })
+      : t('exportScopeAllNone');
+  }
+
+  const allBtn = document.getElementById('btn-export-scope-all');
+  if (allBtn) {
+    if (hasOthers) allBtn.removeAttribute('disabled');
+    else allBtn.setAttribute('disabled', 'true');
+  }
+  if (!hasOthers) exportScope = 'session';
+
+  for (const [scope, id] of [
+    ['session', 'btn-export-scope-session'],
+    ['all', 'btn-export-scope-all'],
+  ]) {
+    const btn = document.getElementById(id);
+    if (!btn) continue;
+    const active = exportScope === scope;
+    btn.classList.toggle('export-scope-btn--active', active);
+    btn.setAttribute('aria-pressed', String(active));
+  }
+
+  const info = document.getElementById('export-session-info');
+  if (info) {
+    info.textContent =
+      exportScope === 'all' ? t('exportScopeAllNote') : t('nodeCount', { count: sessionCount });
+  }
+}
+
+export function setExportScope(scope) {
+  exportScope = scope;
+  renderExportScope();
+}
+
+/**
+ * Every session as one exportable unit.
+ *
+ * The live `currentSession` object is substituted for its stored copy — they
+ * are equal in practice, since every node write is synchronous, but exporting
+ * a re-read of the session the user is actively recording into is a needless
+ * way to lose the last node if a write ever lands late. If it somehow is not
+ * in the index at all, it is appended rather than dropped.
+ */
+function buildCombinedExport() {
+  const sessions = loadAllSessions().map((session) =>
+    session.id === currentSession?.id ? currentSession : session
+  );
+  const hasCurrent = sessions.some((session) => session.id === currentSession?.id);
+  if (!hasCurrent && currentSession?.nodes.length) sessions.push(currentSession);
+  return mergeSessions(sessions);
+}
+
 export function exportAs(format) {
-  if (!currentSession || !currentSession.nodes.length) {
-    showToast(t('exportEmpty'), 'warn');
+  const payload = exportScope === 'all' ? buildCombinedExport() : currentSession;
+
+  if (!payload || !payload.nodes.length) {
+    showToast(t(exportScope === 'all' ? 'exportEmptyAll' : 'exportEmpty'), 'warn');
     return;
   }
-  exportSession(currentSession, format);
+  exportSession(payload, format);
   closeModal('modal-export');
 }
 
@@ -911,12 +1088,10 @@ export function closeSettings() {
 
 export function clearAllSessions() {
   if (!confirm(t('settingsClearConfirm'))) return;
+  resetPendingCapture();
   deleteAllSessions();
-  nodeMarkers.forEach((marker) => marker.remove());
-  nodeMarkers.clear();
-  currentSession = createSession();
-  updateNodeCount();
-  refreshStorageInfo();
+  // adoptSession() clears the markers of the session just deleted.
+  adoptSession(createSession());
   showToast(t('settingsCleared'), 'info');
 }
 
@@ -943,9 +1118,12 @@ export function toggleSound() {
   const on = !isSoundEnabled();
   applySoundPref(on);
   setPref('soundEnabled', on);
-  // Enabling is itself a user gesture, so this doubles as the unlock that lets
-  // iOS and Chrome start the AudioContext, and confirms it audibly.
-  if (on) playToggleBlip();
+  // Enabling is itself a user gesture — the only moment iOS will let the
+  // AudioContext start — so unlock here, then confirm it audibly.
+  if (on) {
+    unlockAudio();
+    playToggleBlip();
+  }
 }
 
 export function changeLanguage(code) {
@@ -1264,6 +1442,68 @@ export function applyManualLocation() {
 
 export function cancelManualLocation() {
   closeModal('modal-manual-location');
+}
+
+// ─── Escape ────────────────────────────────────────────────────────────────
+
+/** True when the overlay with this id is currently on screen. */
+function isLayerOpen(id) {
+  const el = document.getElementById(id);
+  return !!el && !el.hasAttribute('hidden');
+}
+
+/**
+ * Close the topmost dismissible layer, doing exactly what that layer's own
+ * cancel button does — Escape must not become a second, subtly different exit.
+ * Returns true if something was dismissed.
+ *
+ * Order is stacking order, innermost first. Two deliberate omissions:
+ *
+ *   - The direction wheel goes first even though the note modal is "under" it,
+ *     because the note modal is hidden rather than closed while the wheel is
+ *     up; its own cancel path restores it.
+ *   - modal-session is never dismissed. It is a required choice at launch, and
+ *     closing it would leave the app with no session to record into.
+ */
+export function dismissTopLayer() {
+  if (directionWidget?.isOpen()) {
+    directionWidget.close();
+    onDirectionWidgetCancel();
+    return true;
+  }
+  if (isLayerOpen('modal-nodedelete')) {
+    cancelNodeDelete();
+    return true;
+  }
+  if (isLayerOpen('modal-nodeedit')) {
+    cancelNodeEdit();
+    return true;
+  }
+  if (isLayerOpen('modal-manual-location')) {
+    cancelManualLocation();
+    return true;
+  }
+  if (isLayerOpen('modal-note')) {
+    cancelNote();
+    return true;
+  }
+  if (isLayerOpen('modal-tutorial')) {
+    dismissTutorial();
+    return true;
+  }
+  if (isLayerOpen('modal-export')) {
+    closeModal('modal-export');
+    return true;
+  }
+  if (isLayerOpen('panel-nodelist')) {
+    closeNodeList();
+    return true;
+  }
+  if (isLayerOpen('panel-settings')) {
+    closeSettings();
+    return true;
+  }
+  return false;
 }
 
 export function fillManualLocationFromMap() {

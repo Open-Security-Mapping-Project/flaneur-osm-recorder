@@ -13,6 +13,7 @@
 import {
   startNewSession,
   appendToLastSession,
+  newSessionFromSettings,
   dismissTutorial,
   advanceTutorial,
   showTutorial,
@@ -29,6 +30,7 @@ import {
   toggleGps,
   openExportModal,
   exportAs,
+  setExportScope,
   openSettings,
   closeSettings,
   clearAllSessions,
@@ -45,6 +47,7 @@ import {
   applyManualLocation,
   cancelManualLocation,
   fillManualLocationFromMap,
+  dismissTopLayer,
 } from './main.js';
 import { closeModal } from './ui-utils.js';
 
@@ -143,6 +146,14 @@ function onExportClose() {
   closeModal('modal-export');
 }
 
+function onExportScopeSession() {
+  setExportScope('session');
+}
+
+function onExportScopeAll() {
+  setExportScope('all');
+}
+
 // ─── Settings ──────────────────────────────────────────────────────────────
 
 function onMenuOpen() {
@@ -167,6 +178,10 @@ function onSettingsExport() {
   openExportModal();
 }
 
+function onSettingsNewSession() {
+  newSessionFromSettings();
+}
+
 function onSettingsClear() {
   clearAllSessions();
 }
@@ -177,6 +192,15 @@ function onSoundToggle() {
 
 function onWindowResize() {
   handleViewportResize();
+}
+
+/**
+ * Escape backs out of whatever is on top — the direction wheel or any open
+ * modal or panel — with the same effect as that layer's own cancel.
+ */
+function onDocumentKeydown(e) {
+  if (e.key !== 'Escape') return;
+  if (dismissTopLayer()) e.preventDefault();
 }
 
 function onLanguageChange(e) {
@@ -255,6 +279,8 @@ export function registerHandlers() {
 
   // Export
   bind('btn-export', 'click', onExportOpen);
+  bind('btn-export-scope-session', 'click', onExportScopeSession);
+  bind('btn-export-scope-all', 'click', onExportScopeAll);
   bind('btn-export-close', 'click', onExportClose);
   for (const fmt of EXPORT_FORMATS) {
     // Arrow closes over `fmt`; exportAs holds the logic.
@@ -267,9 +293,13 @@ export function registerHandlers() {
   bind('btn-settings-location', 'click', onSettingsLocation);
   bind('btn-settings-tutorial', 'click', onSettingsTutorial);
   bind('btn-settings-export', 'click', onSettingsExport);
+  bind('btn-settings-newsession', 'click', onSettingsNewSession);
   bind('btn-settings-clear', 'click', onSettingsClear);
   bind('btn-settings-sound', 'click', onSoundToggle);
   bind('select-language', 'change', onLanguageChange);
+
+  // Escape backs out of the topmost open layer.
+  document.addEventListener('keydown', onDocumentKeydown);
 
   // Viewport changes (phone URL bar collapsing, rotation) resize the map
   // container without Leaflet noticing.

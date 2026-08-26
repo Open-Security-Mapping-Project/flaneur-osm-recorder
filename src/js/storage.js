@@ -192,6 +192,29 @@ export function getLastSession() {
 }
 
 /**
+ * Every stored session that still holds nodes, oldest activity first.
+ *
+ * Oldest first because this feeds the combined export: the surveyor reads the
+ * result as a chronological record of the ground they covered, and JOSM lists
+ * nodes in file order.
+ *
+ * Index entries whose session body has gone missing are skipped rather than
+ * failing the whole read — one lost key must not cost the user every other
+ * session in the export.
+ */
+export function loadAllSessions() {
+  return getSessionsIndex()
+    .slice()
+    .sort(
+      (a, b) =>
+        (Date.parse(a.updatedAt || a.createdAt) || 0) -
+        (Date.parse(b.updatedAt || b.createdAt) || 0)
+    )
+    .map((entry) => loadSession(entry.id))
+    .filter((session) => session && session.nodes?.length);
+}
+
+/**
  * All sessions, newest activity first, for the session list UI.
  */
 export function listSessions() {

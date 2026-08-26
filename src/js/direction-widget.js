@@ -54,12 +54,16 @@ export class DirectionWidget {
    *   onConfirm: (deg: number) => void,
    *   onCancel: () => void,
    *   onDrag?: (deg: number) => void,
+   *   onEmptyConfirm?: () => void,
    * }} opts
    */
-  constructor({ onConfirm, onCancel, onDrag }) {
+  constructor({ onConfirm, onCancel, onDrag, onEmptyConfirm }) {
     this.onConfirm = onConfirm;
     this.onCancel = onCancel;
     this.onDrag = onDrag ?? (() => {});
+    // Confirm pressed with no bearing chosen. The widget has no DOM outside
+    // itself and no strings of its own, so main.js owns the message.
+    this.onEmptyConfirm = onEmptyConfirm ?? (() => {});
 
     this._deg = null; // null = no direction set yet
     this._dragging = false;
@@ -89,17 +93,21 @@ export class DirectionWidget {
     }
     this._render(initialDeg);
     this._el.removeAttribute('hidden');
-    // Prevent map interaction while widget is open
-    this._el.style.pointerEvents = 'all';
-    this._el.style.display = 'flex';
+    // Drops Leaflet's controls below this overlay so the attribution box stops
+    // covering the Cancel / Set Direction buttons. See direction-widget.css.
+    this._host()?.classList.add('dir-widget-open');
     this._isOpen = true;
   }
 
   close() {
     this._el.setAttribute('hidden', '');
-    this._el.style.pointerEvents = 'none';
-    this._el.style.display = 'none';
+    this._host()?.classList.remove('dir-widget-open');
     this._isOpen = false;
+  }
+
+  /** The map pane this overlay is mounted in, when it is the map pane. */
+  _host() {
+    return this._el?.closest('#map-wrap');
   }
 
   toggle(initialDeg = null) {
@@ -126,9 +134,8 @@ export class DirectionWidget {
     el.setAttribute('hidden', '');
     el.setAttribute('role', 'dialog');
     el.setAttribute('aria-label', 'Set direction');
-    // Make sure it's hidden by default
-    el.style.display = 'none';
-    // Removed inline styles - now in direction-widget.css
+    // Visibility and pointer-events are driven entirely by the [hidden]
+    // attribute in direction-widget.css — no inline styles here.
 
     // SVG canvas — sized via CSS, intrinsic 300×300
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -160,10 +167,14 @@ export class DirectionWidget {
       this.onCancel();
     });
     confirmBtn.addEventListener('click', () => {
-      if (this._deg !== null) {
-        this.close();
-        this.onConfirm(this._deg);
+      // Silently doing nothing here reads as a broken button. Say what the
+      // button is waiting for and stay open so the user can do it.
+      if (this._deg === null) {
+        this.onEmptyConfirm();
+        return;
       }
+      this.close();
+      this.onConfirm(this._deg);
     });
 
     btnRow.appendChild(cancelBtn);
@@ -241,13 +252,30 @@ export class DirectionWidget {
       { label: 'S', deg: 180, color: 'rgba(0,255,229,0.8)' },
       { label: 'W', deg: 270, color: 'rgba(0,255,229,0.8)' },
     ];
+
+    // A single glyph of the 16px label, plus roughly 3px of padding on each
+    // side. SVG text takes no background, so each letter gets its own plate —
+    // without one the letters sit directly on map tiles and a pale building or
+    // a road label swallows them.
+    const plateW = 17;
+    const plateH = 19;
+
     return cards
       .map(({ label, deg, color }) => {
         const rad = ((deg - 90) * Math.PI) / 180;
         const r = 106;
-        const x = (150 + r * Math.cos(rad)).toFixed(1);
-        const y = (150 + r * Math.sin(rad) + 4).toFixed(1); // +4 for text baseline
-        return `<text x="${x}" y="${y}" text-anchor="middle"
+        const cx = 150 + r * Math.cos(rad);
+        const cy = 150 + r * Math.sin(rad);
+        const x = cx.toFixed(1);
+        const y = (cy + 4).toFixed(1); // +4 puts the baseline under the center
+        // The glyph runs from about 11.5px above the baseline to the baseline
+        // itself, so its optical center is ~2px above `cy` — the plate follows
+        // the ink, not the anchor point.
+        const plateX = (cx - plateW / 2).toFixed(1);
+        const plateY = (cy - 2 - plateH / 2).toFixed(1);
+        return `<rect x="${plateX}" y="${plateY}" width="${plateW}" height="${plateH}" rx="3"
+        fill="rgba(0,0,0,0.75)"/>
+      <text x="${x}" y="${y}" text-anchor="middle"
         font-family="Share Tech Mono, monospace" font-size="16"
         font-weight="bold" fill="${color}" letter-spacing="0.05em">${label}</text>`;
       })
@@ -265,11 +293,11 @@ export class DirectionWidget {
     if (deg === null) {
       dynGroup.innerHTML = '';
       if (readout) readout.textContent = '— °  —';
-      if (hint) hint.style.display = '';
+      hint?.classList.remove('dir-drag-hint--hidden');
       return;
     }
 
-    if (hint) hint.style.display = 'none';
+    hint?.classList.add('dir-drag-hint--hidden');
 
     const rad = ((deg - 90) * Math.PI) / 180;
     const cx = 150,

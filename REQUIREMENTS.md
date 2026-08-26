@@ -85,8 +85,13 @@ negotiable for convenience.
   the map center when GPS is unavailable or inaccurate.
 - **R3.8 (SHOULD)** Haptic feedback (`navigator.vibrate(60)`) confirms a
   recording, guarded for browsers without support.
-- **R3.9 (SHOULD)** A direction, once set, applies to the next recorded node
-  and then clears, so a bearing is never silently reused.
+- **R3.9 (SHOULD)** A direction, once set, applies to the next recorded node and
+  then clears, so a bearing is never silently reused — **except** on a node that
+  carries `camera:direction`, where it is held for the node after it. A run of
+  cameras along one street faces the same way, and re-setting the wheel between
+  each was the cost of a rule written for one-off bearings. A held bearing must
+  stay visible while it is held (top-bar badge, direction button arrow) and the
+  record confirmation says it was kept.
 
 ---
 
@@ -120,6 +125,20 @@ while they move about.* These requirements exist to earn that.
 - **R4.8 (SHOULD)** The settings panel reports: number of sessions and nodes,
   bytes used, quota available, and whether storage is persisted or best-effort.
 - **R4.9 (SHOULD)** Abandoned empty sessions are pruned on launch.
+- **R4.9a (MUST)** "New session" means empty on screen as well as in storage.
+  Adopting a session clears the markers of the one that was displayed before,
+  along with any half-finished note, photo or bearing. (Node ids restart at −1
+  in each session, so a leftover marker also *blocks* the first node of the new
+  session from being drawn — `addNodeMarker()` treats the id as already
+  present.)
+- **R4.9b (SHOULD)** Starting a new session is reachable at any time, not only
+  from the launch chooser — which R4.7 skips entirely once the active session
+  holds nodes. The settings panel carries the control. Starting one keeps the
+  previous session on the device; only "Clear All Sessions" deletes anything.
+- **R4.9c (SHOULD)** The launch chooser is shown only when a choice is actually
+  being offered, and its options are not presented as equivalent: whichever is
+  the likely intent is drawn as the primary action. It is never left on screen
+  over a session that has already been resumed.
 - **R4.10 (MUST)** The app states plainly that clearing browser site data or
   uninstalling the PWA destroys all survey data, and that export is the only
   backup.
@@ -149,7 +168,21 @@ while they move about.* These requirements exist to earn that.
 - **R5.7 (SHOULD)** Tag values are XML-escaped; a note containing `&`, `<`, or
   a quote must not produce a malformed file.
 - **R5.8 (MUST)** Export never mutates or clears the session. Exporting is
-  non-destructive and repeatable.
+  non-destructive and repeatable. This extends to the combined export: merging
+  produces a throwaway object, and the stored sessions keep their own node ids.
+- **R5.9 (MUST)** Every stored session is exportable. A session that is on the
+  device but cannot be got off it is data loss with extra steps — the export
+  modal offers "This Session" and "All Sessions", both labelled with the node
+  counts they would write.
+- **R5.10 (MUST)** The combined export reissues node ids across the whole file.
+  Ids are per-session and every session starts again at −1, so concatenation
+  alone would emit duplicates and violate R5.2. Guarded by
+  `tests/export.test.mjs`.
+- **R5.11 (SHOULD)** A combined file is identifiable as one: `flaneur_all_` in
+  the filename, the source sessions listed in the OSM XML header comments and
+  in the GeoJSON `source_sessions`, and each GeoJSON feature labelled with the
+  session it came from. Provenance stays out of OSM *tags* — Flaneur's internal
+  bookkeeping does not belong in OSM's data.
 
 ---
 
@@ -167,6 +200,44 @@ while they move about.* These requirements exist to earn that.
   shown by the indicator dot.
 - **R6.6 (SHOULD)** All user-visible strings come from `i18n.js`. No string is
   hardcoded in `main.js` or `index.html`.
+- **R6.7 (SHOULD)** Map overlays — the direction dial above all — fit inside
+  the map pane on the smallest supported phone. Their parts are laid out in
+  flow relative to each other, never pinned at fixed pixel offsets from the
+  pane's center, which pushes controls off the bottom as soon as the pane is
+  shorter than the offset assumes. The dial scales with the pane.
+- **R6.8 (MUST)** No Leaflet control may cover an interactive overlay control.
+  Leaflet parks its control containers at `z-index: 1000`; anything of ours
+  that takes taps over the map must out-stack them for as long as it is open.
+  (The attribution box was covering the direction dial's own buttons.)
+- **R6.9 (SHOULD)** Feedback sounds are off by default (§2), and every sound is
+  scheduled a fixed lead ahead of `AudioContext.currentTime` so its envelope
+  renders from sample zero. Scheduling at `currentTime` discards the first
+  rendering quantum of the attack on every sound *except* the first, which is
+  what made the first click of a session audibly louder than the rest.
+- **R6.10 (SHOULD)** Sounds are audible on a laptop's speakers as well as a
+  phone's. A brief filtered-noise burst alone carries almost no energy in the
+  band a laptop reproduces; ticks pair it with a pitched component.
+- **R6.10a (SHOULD)** Escape backs out of the topmost open layer — the
+  direction wheel or any modal or panel — with the same effect as that layer's
+  own cancel, never a second exit path that behaves subtly differently. The
+  launch session chooser is the one exception: it is a required choice, and
+  dismissing it would leave no session to record into.
+- **R6.11 (MUST)** No enabled control silently does nothing. A button that
+  cannot act yet says what it is waiting for — the direction dial's "Set
+  Direction" toasts for a bearing rather than ignoring the tap.
+- **R6.12 (SHOULD)** Text drawn over map tiles carries its own contrast plate.
+  Map tiles are arbitrary; a pale building or a road label underneath will
+  otherwise swallow the glyph. Applies to the dial's cardinal letters and to
+  preset icons (`.icon-tile`).
+- **R6.13 (MUST)** Every row of the app shell — top bar, map, presets, status
+  bar — is visible on the shortest supported phone, with the browser's own
+  chrome showing. The shell is sized in `dvh` (`vh` only as the preceding
+  fallback), and `env(safe-area-inset-bottom)` is applied to the bottom row
+  alone.
+- **R6.14 (SHOULD)** A control and the value it acts on are grouped and share a
+  color, so the association is visible rather than inferred — the node count
+  and the caret that opens the node list are one yellow pair at the right edge,
+  and the direction button's arrow turns to the bearing it sets.
 
 ---
 
@@ -234,15 +305,36 @@ Carried forward as of this revision.
 |---|----------------------------------------|---|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | D1 | Photos stored base64 in `localStorage` | **High** | A few camera photos can exhaust the quota and block node saving. Must move to IndexedDB before photos are promoted as a feature. Until then the UI should discourage heavy photo use. |
 | D2 | No photo review/removal UI             | Medium | Photos can be attached but not viewed or detached before saving.                                                                                                                     |
-| D3 | No session picker                      | Medium | Only "new" or "most recent with data". Older sessions are retained and exportable in principle but not reachable from the UI.                                                        |
+| D3 | No session picker                      | Low | Recording still targets "new" or "most recent with data" — an individual older session cannot be reopened by name. Their **data** is no longer stranded: "All Sessions" exports every one of them in a single file (R5.9). |
 | D4 | Tile pre-caching is on-demand only     | Medium | A "cache this area" control is needed for genuine offline surveying.                                                                                                                 |
 | D5 | Full tag editing deferred to JOSM      | Low | Deliberate. Only the note field is editable in-app.                                                                                                                                  |
 | D6 | No existing-OSM-data overlay           | Low | Overpass integration planned so surveyors can see what is already mapped.                                                                                                            |
 | D7 | Non-English locales are stubs          | Low | fr/de/es carry a handful of keys and fall back to English for the rest.                                                                                                              |
 | D8 | No automated browser/E2E test          | Low | Storage logic is unit-tested; UI flows are manual.                                                                                                                                   |
 | D9 | PWA not really tested                  | Low | The PWA feature has not been reviewed.                                                                                                                                               |
-| D10 | The first click of sound is loud.      | Low | When you first tap a preset it, it is louder than the subsequent.                                                                                                                    |
-| D11 | Resuming a session is ambiguous       | Low | The user must decide whether to resume the last session or start a new one. But it also sometimes says that it is restarting the session anyway. Which I think is okay but the buttons should not be presented in the same fashion then. 
+| D12 | iOS silences Web Audio                 | Low | On iPhone the ring/silent switch mutes Web Audio unless the page sets `navigator.audioSession.type = 'playback'`, which only Safari 16.4+ has. Below that there is no way to make the app audible with the switch set to silent; the sound toggle should say so rather than appear broken. |
+
+### Resolved in this revision
+
+- **D10 — the first click was louder than the rest.** Sounds were scheduled at
+  exactly `ac.currentTime`. The audio thread renders in 128-sample quanta, so
+  everything scheduled mid-quantum loses the first milliseconds of its attack —
+  every sound except the first, which lands on a quantum boundary because the
+  context has only just started. Fixed by a constant `SCHEDULE_LEAD_S` on every
+  sound (R6.9), a shared master gain, and real attack ramps instead of jumps
+  straight to peak. Drag ticks also gained a pitched component so they are
+  audible on a desktop mouse drag, not only held to a phone's speaker (R6.10).
+- **D11 — "New Session" gave you the previous session's nodes.** `#modal-session`
+  carried no `hidden` attribute, so the chooser was painted on every launch, and
+  the silent-resume path in `openSessionModal()` returned *without closing it* —
+  leaving the chooser on top of a session that had already been restored and
+  drawn on the map. Tapping "New Session" there created an empty session under a
+  map still full of the old session's markers. Fixed by R4.9a–R4.9c: the modal
+  is hidden until a choice is genuinely offered, adopting a session clears the
+  previous one's markers and pending state, and the two options are no longer
+  styled identically. A "Start New Session" control in settings makes a new
+  session reachable once resume has taken over the launch path (R4.9b).
+
 ---
 
 ## 10. Release checklist
@@ -260,6 +352,16 @@ Before tagging a release:
       appear and node ids do not repeat
 - [ ] Manual: export OSM XML, open in JOSM, confirm the layer loads with all
       nodes and no duplicate-id warning
+- [ ] Manual: with two or more sessions saved, export "All Sessions" and
+      confirm JOSM loads every node from every session as one layer, with no
+      duplicate-id warning
+- [ ] Manual: start a new session with nodes on screen — confirm the map,
+      the count and the node list all come back empty
+- [ ] Manual: on the shortest phone screen supported, open the direction dial
+      and confirm its buttons sit inside the map pane and are not covered by
+      the OpenStreetMap attribution box
+- [ ] Manual: with sound on, record several nodes — the first click must be no
+      louder than the rest — and drag the dial with a mouse to hear the ticks
 - [ ] Manual: install as a PWA on Android, confirm the icon and offline load
 - [ ] Manual: airplane mode — confirm recording and export still work
 - [ ] Known defects in §9 reviewed and updated
