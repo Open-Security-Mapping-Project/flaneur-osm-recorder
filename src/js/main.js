@@ -69,7 +69,7 @@ const TUTORIAL_TOTAL = 6;
  * real streetscape is a better "still locating" state.
  */
 const DEFAULT_CENTER = [40.712772, -74.006058];
-const DEFAULT_ZOOM = 16; // neighbourhood context, not a rooftop
+const DEFAULT_ZOOM = 16; // neighborhood context, not a rooftop
 const SURVEY_ZOOM = 18; // what we snap to once an actual position arrives
 
 const gps = new GpsManager({
@@ -266,7 +266,7 @@ export function toggleDirectionWidget() {
 
 /** Open the direction widget from inside the note modal. */
 export function openDirectionFromNote() {
-  closeModal('modal-note'); // hidden, not cancelled — restoreNoteModal brings it back
+  closeModal('modal-note'); // hidden, not canceled — restoreNoteModal brings it back
   directionWidget.open(pendingDirection);
 }
 
@@ -601,7 +601,7 @@ function recordNode(preset, note, photos) {
   let lat, lon, accuracy;
 
   if (placementMode === 'crosshair') {
-    // invalidateSize first so the geographic centre matches the drawn reticle.
+    // invalidateSize first so the geographic center matches the drawn reticle.
     map.invalidateSize();
     const center = map.getCenter();
     lat = center.lat;

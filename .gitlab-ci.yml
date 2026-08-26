@@ -7,7 +7,8 @@ stages:
   - build
 
 default:
-  image: node:20-alpine
+  # Node 22 LTS — Vite 8 requires ^20.19.0 || >=22.12.0 (see package.json engines).
+  image: node:22-alpine
   before_script:
     - npm ci
 

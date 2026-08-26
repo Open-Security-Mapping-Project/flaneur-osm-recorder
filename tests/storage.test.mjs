@@ -61,6 +61,28 @@ function check(name, cond, extra = '') {
 
 const node = (s, tag) => S.addNode(s, { lat: 1, lon: 2, accuracy: 5, tags: { x: tag }, note: '' });
 
+/**
+ * Run `fn` with console.error/warn muted.
+ *
+ * Several tests deliberately drive storage.js down its failure paths, and it
+ * logs those to stderr by design. Node buffers stdout and stderr separately,
+ * so in CI those lines interleave into unrelated sections — the GitHub Actions
+ * log showed a QuotaExceededError stack printed under "BUG 1", which reads as
+ * a failing test when nothing is wrong. Expected noise is suppressed; the
+ * assertions still verify the error was reported through onWriteError().
+ */
+function withQuietErrors(fn) {
+  const { error, warn } = console;
+  console.error = () => {};
+  console.warn = () => {};
+  try {
+    return fn();
+  } finally {
+    console.error = error;
+    console.warn = warn;
+  }
+}
+
 // ── BUG 1: duplicate negative IDs after a reload ───────────────────────────
 console.log('\nBUG 1 — node IDs must stay unique across a page reload');
 {
@@ -132,7 +154,9 @@ console.log('\nQuota — a rejected write must be reported, not swallowed');
   S.onWriteError((d) => (reported = d));
   global.localStorage.quota = 10; // no room for anything more
 
-  const failed = S.addNode(s, { lat: 1, lon: 2, accuracy: 1, tags: { x: 'nope' }, note: '' });
+  const failed = withQuietErrors(() =>
+    S.addNode(s, { lat: 1, lon: 2, accuracy: 1, tags: { x: 'nope' }, note: '' })
+  );
   check('addNode() returns null when the write fails', failed === null, String(failed));
   check('the write error was reported', reported?.reason === 'quota', JSON.stringify(reported?.reason));
   check('the in-memory session was rolled back (no phantom node)', s.nodes.length === 1, String(s.nodes.length));
@@ -143,8 +167,14 @@ console.log('\nBlocked storage — detection must not throw');
 {
   localStorage = global.localStorage = new MockStorage({ blocked: true });
   check('isStorageAvailable() reports false instead of throwing', S.isStorageAvailable() === false);
-  check('getSessionsIndex() degrades to []', Array.isArray(S.getSessionsIndex()));
-  check('estimateStorageUsedKb() degrades to 0', S.estimateStorageUsedKb() === 0);
+  check(
+    'getSessionsIndex() degrades to []',
+    Array.isArray(withQuietErrors(() => S.getSessionsIndex()))
+  );
+  check(
+    'estimateStorageUsedKb() degrades to 0',
+    withQuietErrors(() => S.estimateStorageUsedKb()) === 0
+  );
 }
 
 console.log(failures ? `\n${failures} FAILURE(S)\n` : '\nAll storage checks passed.\n');

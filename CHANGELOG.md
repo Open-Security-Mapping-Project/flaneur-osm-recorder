@@ -4,7 +4,7 @@ All notable changes to Flaneur OSM Recorder are recorded here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning is [Semantic Versioning](https://semver.org/); pre-release builds
-carry an `-alphaN` suffix and may change behaviour without notice.
+carry an `-alphaN` suffix and may change behavior without notice.
 
 ---
 
@@ -69,7 +69,7 @@ rebuilt so that a point which appears on screen is guaranteed to be on disk.
 
 - `npm test` runs real storage regression tests (`tests/storage.test.mjs`) —
   plain Node, no framework, no new dependencies. Wired into GitHub and GitLab CI.
-- `REQUIREMENTS.md`: the behavioural contract, including the threat model and a
+- `REQUIREMENTS.md`: the behavioral contract, including the threat model and a
   tracked list of known defects.
 - `CHANGELOG.md` (this file).
 - Tailscale support for mobile testing: `vite.config.js` allows `.ts.net`
@@ -84,7 +84,7 @@ rebuilt so that a point which appears on screen is guaranteed to be on disk.
   affirmative go action rather than another step.
 - **The launch session modal gained a "Show Tutorial [?]" option** and an
   attribution line: *"Flaneur is an Open Security Mapping Project web app. It is
-  open source / GPLv3.0."* — linking the project name to the GitHub organisation
+  open source / GPLv3.0."* — linking the project name to the GitHub organization
   and "open source" to the repository. The tutorial opens over the session modal
   without picking a session, so the choice is still waiting when it closes.
 - **The map opens on New York City Hall instead of the ocean.** Before a GPS fix
@@ -106,7 +106,7 @@ rebuilt so that a point which appears on screen is guaranteed to be on disk.
 - **Cancel in the direction overlay is red, and now clears the bearing.**
   Previously it dismissed the overlay but left the direction badge set in the
   top bar, so the next recorded node was silently tagged with a bearing the user
-  believed they had cancelled.
+  believed they had canceled.
 - Preset buttons are disabled while there is no position fix, instead of
   accepting a tap that cannot be fulfilled. This is the user-visible half of the
   "first bookmark" fix.
@@ -134,6 +134,33 @@ rebuilt so that a point which appears on screen is guaranteed to be on disk.
 - Removed verbose emoji console logging from the GPS and map hot paths.
 - `CLAUDE.md` file map corrected — it described `node-list.js` and
   `photo-review.js`, which have never existed.
+
+### Security / toolchain
+
+- **`npm audit` is clean — 0 vulnerabilities, down from 16** (11 high, 4
+  moderate, 1 low). All 16 were in the dev toolchain; the production audit was
+  already clean, and nothing vulnerable ever reached the shipped bundle — the
+  only runtime dependency is Leaflet. Two of them did matter to contributors,
+  though: an esbuild flaw letting any website issue requests to the dev server
+  and read the responses, and a Vite path traversal — both relevant because
+  this project deliberately binds `0.0.0.0` for phone testing.
+- **Vite 5.4 → 8.2, vite-plugin-pwa 0.19 → 1.3.** Required to clear the last
+  three advisories. Build output verified identical in structure: same
+  manifest, same three icons, same 9 precache entries.
+- **Node requirement raised to `^20.19.0 || >=22.12.0`** (was `>=18.0.0`) to
+  match Vite 8. CI moves to Node 22 LTS.
+- **`"type": "module"` added to package.json**, clearing Vite's CJS config
+  deprecation warning. `vite.config.js` now uses `import.meta.dirname` instead
+  of `__dirname`.
+- **CI actions bumped v4 → v7.** The v4 line targets Node 20, which GitHub has
+  deprecated and force-runs on Node 24 with a warning on every job.
+- **`caniuse-lite` refreshed** (was 6 months stale). No target browser changes.
+- **Test output no longer interleaves stack traces into unrelated sections.**
+  Several tests deliberately drive storage failure paths, which log to stderr;
+  Node buffers stdout and stderr separately, so in CI a `QuotaExceededError`
+  stack printed underneath "BUG 1" and read as a failure when nothing was
+  wrong. Expected error output is now suppressed while the assertions still
+  verify the failure was reported.
 
 ### Known issues
 

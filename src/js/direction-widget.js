@@ -172,7 +172,7 @@ export class DirectionWidget {
       <!-- Cardinal labels -->
       ${this._cardinalLabels()}
 
-      <!-- Centre reticle rings -->
+      <!-- Center reticle rings -->
       <circle cx="150" cy="150" r="54"
         fill="rgba(0,255,229,0.04)" stroke="rgba(0,255,229,0.25)" stroke-width="1"/>
       <circle cx="150" cy="150" r="6"

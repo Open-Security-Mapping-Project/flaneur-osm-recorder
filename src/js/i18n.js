@@ -85,11 +85,11 @@ const strings = {
 
     // Placement mode
     placementGps: 'GPS mode: place at current location',
-    placementCrosshair: 'Crosshair mode: place at map centre',
+    placementCrosshair: 'Crosshair mode: place at map center',
     placementManualSuffix: '(manual)',
 
     // Manual location
-    manualLocationSet: 'Map centred at {lat}, {lon}. Use crosshair mode to place nodes.',
+    manualLocationSet: 'Map centered at {lat}, {lon}. Use crosshair mode to place nodes.',
 
     // Storage
     storageTitle: 'Storage on this device',
@@ -279,7 +279,7 @@ const strings = {
     manualLocationHint: 'Enter coordinates to navigate the map. Useful when GPS is unavailable.',
     manualLocationLat: 'Latitude (-90 to 90)',
     manualLocationLon: 'Longitude (-180 to 180)',
-    manualLocationUseView: 'Use Current Map Centre',
+    manualLocationUseView: 'Use Current Map Center',
     manualLocationFooter:
       'After setting location, use crosshair mode (⊕) to place nodes by panning the map.',
     actionSave: 'Save',

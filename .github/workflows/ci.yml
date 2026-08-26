@@ -10,17 +10,21 @@ jobs:
   lint-and-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Current action line. The v4 actions target Node 20, which GitHub has
+      # deprecated and now force-runs on Node 24 with a warning on every job.
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # Node 22 LTS. Vite 8 requires ^20.19.0 || >=22.12.0 — see
+          # the "engines" field in package.json.
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint:check
       - run: npm run format:check
       - run: npm test
       - run: npm run build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/

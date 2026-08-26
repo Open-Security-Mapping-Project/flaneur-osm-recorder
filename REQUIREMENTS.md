@@ -1,10 +1,10 @@
 # Flaneur OSM Recorder — Requirements
 
-Status: **draft for v0.2.0** · Last revised 2026-08-25
+Status: **draft for v1.1-alpha1** · Last revised 2026-08-26
 
 This document states what the app must do, and — as importantly — what it must
-never do. `CLAUDE.md` covers *how* the code is organised; this covers *what the
-software is obliged to deliver*. When the two disagree about behaviour, this
+never do. `CLAUDE.md` covers *how* the code is organized; this covers *what the
+software is obliged to deliver*. When the two disagree about behavior, this
 file wins and `CLAUDE.md` should be corrected.
 
 Requirements are marked:
@@ -34,7 +34,7 @@ seconds and trust that it is still there an hour later.
 
 ## 2. Data ownership and privacy
 
-These are the requirements the project exists to honour. They are not
+These are the requirements the project exists to honor. They are not
 negotiable for convenience.
 
 - **R2.1 (MUST)** No survey data leaves the device except through an export the
@@ -71,7 +71,7 @@ negotiable for convenience.
   failure is stated plainly and no marker appears.
 - **R3.3 (MUST)** When there is no position fix and placement mode is GPS,
   preset buttons are visibly disabled rather than silently failing. This is the
-  fix for the reported "the first bookmark doesn't work" behaviour: the app was
+  fix for the reported "the first bookmark doesn't work" behavior: the app was
   accepting a tap it could not fulfil.
 - **R3.4 (MUST)** Every recorded node carries: a negative integer id, lat/lon,
   an ISO timestamp, its preset tags, and `source=flaneur_survey`.
@@ -82,7 +82,7 @@ negotiable for convenience.
 - **R3.6 (MUST)** Holding a preset for 700 ms opens the note modal instead of
   recording immediately. Releasing before 700 ms records immediately.
 - **R3.7 (SHOULD)** A crosshair placement mode lets the user place a node at
-  the map centre when GPS is unavailable or inaccurate.
+  the map center when GPS is unavailable or inaccurate.
 - **R3.8 (SHOULD)** Haptic feedback (`navigator.vibrate(60)`) confirms a
   recording, guarded for browsers without support.
 - **R3.9 (SHOULD)** A direction, once set, applies to the next recorded node
@@ -203,6 +203,19 @@ while they move about.* These requirements exist to earn that.
   degrade, never crash the config.
 - **R8.7 (SHOULD)** Storage and export logic — the parts that can lose a user's
   work — carry regression tests in `tests/`.
+- **R8.8 (MUST)** Use American US English spelling, not British English spelling.
+  Applies to UI strings, documentation, comments, and commit messages —
+  "center" not "centre", "color" not "colour", "behavior" not "behaviour".
+- **R8.9 (MUST)** `npm audit --omit=dev` reports zero vulnerabilities before a
+  release tag. The shipped bundle carries exactly one runtime dependency
+  (Leaflet), so this is a low bar that must never be missed.
+- **R8.10 (SHOULD)** `npm audit` (including dev dependencies) is clean. Dev
+  toolchain advisories do not reach users, but the dev server is deliberately
+  bound to `0.0.0.0` for phone testing, so dev-server vulnerabilities are a
+  real exposure for contributors.
+- **R8.11 (SHOULD)** CI output stays legible: tests that exercise failure paths
+  suppress their expected error logging, so a passing run contains no stack
+  traces that could be mistaken for failures.
 
 ---
 
@@ -210,16 +223,17 @@ while they move about.* These requirements exist to earn that.
 
 Carried forward as of this revision.
 
-| # | Item | Severity | Notes |
-|---|---|---|---|
+| # | Item                                   | Severity | Notes |
+|---|----------------------------------------|---|---|
 | D1 | Photos stored base64 in `localStorage` | **High** | A few camera photos can exhaust the quota and block node saving. Must move to IndexedDB before photos are promoted as a feature. Until then the UI should discourage heavy photo use. |
-| D2 | No photo review/removal UI | Medium | Photos can be attached but not viewed or detached before saving. |
-| D3 | No session picker | Medium | Only "new" or "most recent with data". Older sessions are retained and exportable in principle but not reachable from the UI. |
-| D4 | Tile pre-caching is on-demand only | Medium | A "cache this area" control is needed for genuine offline surveying. |
-| D5 | Full tag editing deferred to JOSM | Low | Deliberate. Only the note field is editable in-app. |
-| D6 | No existing-OSM-data overlay | Low | Overpass integration planned so surveyors can see what is already mapped. |
-| D7 | Non-English locales are stubs | Low | fr/de/es carry a handful of keys and fall back to English for the rest. |
-| D8 | No automated browser/E2E test | Low | Storage logic is unit-tested; UI flows are manual. |
+| D2 | No photo review/removal UI             | Medium | Photos can be attached but not viewed or detached before saving. |
+| D3 | No session picker                      | Medium | Only "new" or "most recent with data". Older sessions are retained and exportable in principle but not reachable from the UI. |
+| D4 | Tile pre-caching is on-demand only     | Medium | A "cache this area" control is needed for genuine offline surveying. |
+| D5 | Full tag editing deferred to JOSM      | Low | Deliberate. Only the note field is editable in-app. |
+| D6 | No existing-OSM-data overlay           | Low | Overpass integration planned so surveyors can see what is already mapped. |
+| D7 | Non-English locales are stubs          | Low | fr/de/es carry a handful of keys and fall back to English for the rest. |
+| D8 | No automated browser/E2E test          | Low | Storage logic is unit-tested; UI flows are manual. |
+| D9 | PWA not really tested                  | Low | The PWA feature has not been reviewed. |
 
 ---
 
@@ -229,8 +243,10 @@ Before tagging a release:
 
 - [ ] `npm run lint:check` clean
 - [ ] `npm run format:check` clean
-- [ ] `npm test` passes
+- [ ] `npm test` passes, with no stray stack traces in the output
 - [ ] `npm run build` succeeds from a clean clone with no `.cert/`
+- [ ] `npm audit --omit=dev` reports zero vulnerabilities (R8.9)
+- [ ] `npm audit` reviewed; any remaining dev advisories noted in the changelog
 - [ ] Manual: record a node, reload the page, confirm it is still there
 - [ ] Manual: record nodes, reload, append to the session, confirm new markers
       appear and node ids do not repeat

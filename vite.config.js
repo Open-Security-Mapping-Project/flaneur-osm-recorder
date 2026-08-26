@@ -14,8 +14,10 @@ import path from 'path';
  * localhost anyway.
  */
 function loadDevCert() {
-  const keyPath = path.resolve(__dirname, '.cert/key.pem');
-  const certPath = path.resolve(__dirname, '.cert/cert.pem');
+  // import.meta.dirname, not __dirname: this file is ESM now that package.json
+  // declares "type": "module". Requires Node 20.11+, which vite 8 mandates anyway.
+  const keyPath = path.resolve(import.meta.dirname, '.cert/key.pem');
+  const certPath = path.resolve(import.meta.dirname, '.cert/cert.pem');
   if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
     console.log(
       '\n  ℹ️  No .cert/ found — serving over HTTP.\n' +
@@ -36,7 +38,7 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
     https: devCert,
-    // Vite 5.4 rejects requests whose Host header it does not recognise.
+    // Vite rejects requests whose Host header it does not recognize.
     // Allow Tailscale MagicDNS names so a phone on the tailnet can reach the
     // dev server by hostname. `.ts.net` covers any tailnet; add your own LAN
     // hostnames here if you use them.

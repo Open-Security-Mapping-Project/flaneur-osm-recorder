@@ -72,13 +72,15 @@ On Android (Chrome): tap the browser menu → **Add to Home Screen**
 On iOS (Safari): tap the share icon → **Add to Home Screen**  
 On desktop: look for the install icon in the address bar
 
+NOTE: PWA has not really been tested. 
+
 ---
 
 ## Development
 
 ### Prerequisites
-- Node.js ≥ 18
-- npm ≥ 9
+- Node.js ≥ 20.19 (or ≥ 22.12) — required by Vite 8
+- npm ≥ 10
 
 ### Setup
 
@@ -206,7 +208,7 @@ flaneur-osm-recorder/
 `handlers.js` binds them to elements and holds no logic of its own. All other
 modules are DOM-free. All styles live in `src/css/` — there are no inline
 `style=` attributes and no `<style>` blocks. See `CLAUDE.md` for the full
-conventions and `REQUIREMENTS.md` for the behavioural contract.
+conventions and `REQUIREMENTS.md` for the behavioral contract.
 
 ---
 
