@@ -565,6 +565,10 @@ body {
   gap: 8px;
   margin-bottom: 10px;
 }
+/* display:flex above would otherwise beat the UA rule for [hidden]. */
+.export-scope[hidden] {
+  display: none;
+}
 .export-scope-btn {
   flex: 1 1 0;
   display: flex;
@@ -590,18 +594,10 @@ body {
   --aug-border-all: 2px;
   --aug-border-bg: var(--accent);
 }
-.export-scope-btn[disabled] {
-  opacity: 0.4;
-  cursor: not-allowed;
-  pointer-events: none;
-}
 .export-scope-title {
   font-family: 'Share Tech Mono', monospace;
   font-size: 12px;
   color: var(--accent);
-}
-.export-scope-btn[disabled] .export-scope-title {
-  color: var(--text-dim);
 }
 .export-scope-desc {
   font-size: 10px;

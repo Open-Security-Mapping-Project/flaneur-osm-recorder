@@ -999,29 +999,37 @@ export function openExportModal() {
  * the chosen one. The counts are the point: without them "All Sessions" is a
  * blind choice, and the reason older sessions felt unreachable is that nothing
  * in the UI ever admitted they existed.
+ *
+ * With only one session on the device the picker disappears altogether. Two
+ * buttons that export the identical file are not a choice, and offering one is
+ * a way of implying there is more saved than there is.
  */
 function renderExportScope() {
   const sessionCount = currentSession?.nodes.length ?? 0;
-  const others = loadAllSessions();
-  const otherNodes = others.reduce((sum, session) => sum + session.nodes.length, 0);
-  const hasOthers = others.length > 0;
+  // Counted from exactly what a combined export would write, so the numbers on
+  // the button cannot drift from the file it produces.
+  const combined = combinedSessions();
+  const combinedNodes = combined.reduce((sum, session) => sum + session.nodes.length, 0);
+  const offerAll = combined.length > 1;
+
+  if (!offerAll) exportScope = 'session';
+
+  const picker = document.getElementById('export-scope');
+  if (picker) {
+    if (offerAll) picker.removeAttribute('hidden');
+    else picker.setAttribute('hidden', '');
+  }
 
   const sessionInfo = document.getElementById('export-scope-session-info');
   if (sessionInfo) sessionInfo.textContent = t('exportScopeSessionInfo', { count: sessionCount });
 
   const allInfo = document.getElementById('export-scope-all-info');
   if (allInfo) {
-    allInfo.textContent = hasOthers
-      ? t('exportScopeAllInfo', { nodes: otherNodes, sessions: others.length })
-      : t('exportScopeAllNone');
+    allInfo.textContent = t('exportScopeAllInfo', {
+      nodes: combinedNodes,
+      sessions: combined.length,
+    });
   }
-
-  const allBtn = document.getElementById('btn-export-scope-all');
-  if (allBtn) {
-    if (hasOthers) allBtn.removeAttribute('disabled');
-    else allBtn.setAttribute('disabled', 'true');
-  }
-  if (!hasOthers) exportScope = 'session';
 
   for (const [scope, id] of [
     ['session', 'btn-export-scope-session'],
@@ -1037,7 +1045,9 @@ function renderExportScope() {
   const info = document.getElementById('export-session-info');
   if (info) {
     info.textContent =
-      exportScope === 'all' ? t('exportScopeAllNote') : t('nodeCount', { count: sessionCount });
+      exportScope === 'all'
+        ? t('exportScopeAllNote', { sessions: combined.length, nodes: combinedNodes })
+        : t('nodeCount', { count: sessionCount });
   }
 }
 
@@ -1047,21 +1057,28 @@ export function setExportScope(scope) {
 }
 
 /**
- * Every session as one exportable unit.
+ * The sessions a combined export would write, in file order.
  *
  * The live `currentSession` object is substituted for its stored copy — they
  * are equal in practice, since every node write is synchronous, but exporting
  * a re-read of the session the user is actively recording into is a needless
  * way to lose the last node if a write ever lands late. If it somehow is not
  * in the index at all, it is appended rather than dropped.
+ *
+ * Shared with renderExportScope() so the counts shown on the button are
+ * measured from the same set the export walks.
  */
-function buildCombinedExport() {
+function combinedSessions() {
   const sessions = loadAllSessions().map((session) =>
     session.id === currentSession?.id ? currentSession : session
   );
   const hasCurrent = sessions.some((session) => session.id === currentSession?.id);
   if (!hasCurrent && currentSession?.nodes.length) sessions.push(currentSession);
-  return mergeSessions(sessions);
+  return sessions;
+}
+
+function buildCombinedExport() {
+  return mergeSessions(combinedSessions());
 }
 
 export function exportAs(format) {

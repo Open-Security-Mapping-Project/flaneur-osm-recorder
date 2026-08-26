@@ -236,9 +236,8 @@ const strings = {
     exportScopeAll: 'All Sessions',
     exportScopeSessionInfo: '{count} nodes',
     exportScopeAllInfo: '{nodes} nodes in {sessions} sessions',
-    exportScopeAllNone: 'Nothing else saved',
     exportScopeAllNote:
-      'All saved sessions in one file. Node ids are renumbered so JOSM loads them as one layer.',
+      'All {sessions} saved sessions with {nodes} nodes in one file. Node ids are renumbered so JOSM loads them as one layer.',
     exportEmptyAll: 'No saved sessions have any nodes yet.',
     exportPhotoNote:
       'Note: Photos are not embedded in exports. See photo workflow in tutorial. (This feature is in development)',

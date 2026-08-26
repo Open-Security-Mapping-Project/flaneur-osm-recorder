@@ -176,7 +176,10 @@ while they move about.* These requirements exist to earn that.
 - **R5.9 (MUST)** Every stored session is exportable. A session that is on the
   device but cannot be got off it is data loss with extra steps — the export
   modal offers "This Session" and "All Sessions", both labelled with the node
-  counts they would write.
+  counts they would write, counted from the same set the export walks. With
+  only one session stored the picker is hidden entirely: two buttons that
+  produce the identical file are not a choice, and showing them implies more is
+  saved than is.
 - **R5.10 (MUST)** The combined export reissues node ids across the whole file.
   Ids are per-session and every session starts again at −1, so concatenation
   alone would emit duplicates and violate R5.2. Guarded by

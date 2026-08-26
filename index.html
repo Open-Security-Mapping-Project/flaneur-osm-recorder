@@ -190,8 +190,12 @@
   <div class="modal-box" augmented-ui="tl-clip br-clip exe">
     <div class="modal-title" data-i18n="exportModalTitle">Export Session</div>
     <div class="modal-body">
-      <!-- What to export. The format buttons below act on whichever is chosen. -->
-      <div class="export-scope" role="group" aria-label="What to export">
+      <!--
+        What to export. The format buttons below act on whichever is chosen.
+        Hidden by renderExportScope() when only one session is stored — two
+        buttons that produce the identical file are not a choice.
+      -->
+      <div id="export-scope" class="export-scope" role="group" aria-label="What to export" hidden>
         <button id="btn-export-scope-session" class="export-scope-btn export-scope-btn--active"
                 augmented-ui="tl-clip br-clip exe" aria-pressed="true">
           <span class="export-scope-title" data-i18n="exportScopeSession">This Session</span>

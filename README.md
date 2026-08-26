@@ -1,6 +1,6 @@
 # Flaneur OSM Recorder
 
-> A mobile-first PWA for field survey data collection, designed for the OpenStreetMap / JOSM workflow.
+> A mobile-first website app & PWA for field survey data collection, designed for the OpenStreetMap / JOSM workflow.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
@@ -8,6 +8,8 @@
 <!-- * **GitLab:** mirror not currently published -->
 
 Current version: **v1.1-alpha1** — see [CHANGELOG.md](./CHANGELOG.md).
+
+This is an independent project. It is not affiliated with OpenStreetMap or JOSM. It aims to streamline working with those platforms, however.
 
 ---
 
