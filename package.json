@@ -1,16 +1,16 @@
 {
   "name": "flaneur-osm-recorder",
-  "version": "0.1.0",
+  "version": "1.1.0-alpha.1",
   "description": "A mobile-first PWA for field survey data collection compatible with JOSM/OpenStreetMap",
   "license": "GPL-3.0-or-later",
   "author": "Flaneur OSM Contributors",
-  "homepage": "https://github.com/flaneur-osm/flaneur-osm-recorder",
+  "homepage": "https://github.com/Open-Security-Mapping-Project/flaneur-osm-recorder",
   "repository": {
     "type": "git",
-    "url": "https://github.com/flaneur-osm/flaneur-osm-recorder.git"
+    "url": "https://github.com/Open-Security-Mapping-Project/flaneur-osm-recorder.git"
   },
   "bugs": {
-    "url": "https://github.com/flaneur-osm/flaneur-osm-recorder/issues"
+    "url": "https://github.com/Open-Security-Mapping-Project/flaneur-osm-recorder/issues"
   },
   "scripts": {
     "dev": "vite",
@@ -20,7 +20,7 @@
     "lint:check": "eslint src --ext .js",
     "format": "prettier --write src/",
     "format:check": "prettier --check src/",
-    "test": "echo 'No tests yet — contributions welcome!'"
+    "test": "node tests/storage.test.mjs"
   },
   "devDependencies": {
     "vite": "^5.1.0",

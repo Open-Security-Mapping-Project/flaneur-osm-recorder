@@ -16,6 +16,7 @@ lint:
   script:
     - npm run lint:check
     - npm run format:check
+    - npm test
   cache:
     key: node-modules
     paths:

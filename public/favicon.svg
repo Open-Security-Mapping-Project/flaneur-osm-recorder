@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Flaneur">
+  <rect width="512" height="512" fill="#070b14"/>
+  <!-- augmented-ui style corner clips -->
+  <path d="M40 96 L96 40 L472 40 L472 416 L416 472 L40 472 Z" fill="none" stroke="#00a89a" stroke-width="8"/>
+  <!-- map pin -->
+  <path d="M256 132c-49 0-89 40-89 89 0 62 89 159 89 159s89-97 89-159c0-49-40-89-89-89z"
+        fill="none" stroke="#00ffe5" stroke-width="18" stroke-linejoin="round"/>
+  <circle cx="256" cy="220" r="31" fill="#00ffe5"/>
+  <!-- direction ray -->
+  <path d="M256 96 L232 140 L280 140 Z" fill="#ff3c6e"/>
+</svg>

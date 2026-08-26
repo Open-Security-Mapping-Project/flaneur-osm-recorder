@@ -19,8 +19,24 @@
 // Cardinal / intercardinal label from degrees (0=N, 90=E, 180=S, 270=W)
 export function degreesToCardinal(deg) {
   const d = ((deg % 360) + 360) % 360;
-  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE',
-                'S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  const dirs = [
+    'N',
+    'NNE',
+    'NE',
+    'ENE',
+    'E',
+    'ESE',
+    'SE',
+    'SSE',
+    'S',
+    'SSW',
+    'SW',
+    'WSW',
+    'W',
+    'WNW',
+    'NW',
+    'NNW',
+  ];
   const idx = Math.round(d / 22.5) % 16;
   return dirs[idx];
 }
@@ -46,6 +62,10 @@ export class DirectionWidget {
 
   open(initialDeg = null) {
     this._deg = initialDeg;
+    // Confirm is only armed once a bearing exists — reset it for a fresh open.
+    if (initialDeg === null) {
+      this._el?.querySelector('#dir-confirm-btn')?.classList.remove('dir-btn--armed');
+    }
     this._render(initialDeg);
     this._el.removeAttribute('hidden');
     // Prevent map interaction while widget is open
@@ -108,17 +128,9 @@ export class DirectionWidget {
 
     // Action buttons row
     const btnRow = document.createElement('div');
-    btnRow.style.cssText = [
-      'position: absolute',
-      'bottom: calc(50% - 230px)',
-      'left: 50%',
-      'transform: translateX(-50%)',
-      'display: flex',
-      'gap: 12px',
-      'pointer-events: all',
-    ].join(';');
+    btnRow.className = 'dir-btn-row';
 
-    const cancelBtn = this._makeBtn('Cancel', 'ghost');
+    const cancelBtn = this._makeBtn('Cancel', 'cancel');
     const confirmBtn = this._makeBtn('Set Direction ✓', 'primary');
     confirmBtn.id = 'dir-confirm-btn';
 
@@ -300,12 +312,8 @@ export class DirectionWidget {
       readout.textContent = `${Math.round(deg)}°  ${cardinal}`;
     }
 
-    // Update confirm button appearance
-    const confirmBtn = this._el?.querySelector('#dir-confirm-btn');
-    if (confirmBtn) {
-      confirmBtn.style.opacity = '1';
-      confirmBtn.style.pointerEvents = 'all';
-    }
+    // A bearing is now chosen, so the confirm button becomes fully active.
+    this._el?.querySelector('#dir-confirm-btn')?.classList.add('dir-btn--armed');
   }
 
   // ── Pointer events ─────────────────────────────────────────────────────────
@@ -358,43 +366,15 @@ export class DirectionWidget {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
+  /**
+   * @param {string} label
+   * @param {'primary'|'cancel'} variant — styling lives in direction-widget.css
+   */
   _makeBtn(label, variant) {
     const btn = document.createElement('button');
     btn.textContent = label;
-    btn.className = `btn-${variant}`;
+    btn.className = `dir-btn dir-btn--${variant}`;
     btn.setAttribute('augmented-ui', 'tl-clip br-clip exe');
-    btn.style.cssText = [
-      'font-family: "Share Tech Mono", monospace',
-      'font-size: 12px',
-      'letter-spacing: 0.08em',
-      'text-transform: uppercase',
-      'padding: 8px 18px',
-      'border: 1px solid var(--accent, #00ffe5)',
-      'cursor: pointer',
-      '--aug-tl: 7px',
-      '--aug-br: 7px',
-      '--aug-border-all: 1px',
-      'filter: drop-shadow(2px 2px 1px rgba(0, 0, 0, 0.67))',
-    ].join(';');
-
-    if (variant === 'primary') {
-      btn.style.cssText += [
-        ';background: rgba(0,255,229,0.7)',
-        // 'color: var(--accent, #00ffe5)',
-        'color: #000',
-        '--aug-border-bg: var(--accent, #00ffe5)',
-        'opacity: 0.75',
-      ].join(';');
-    } else {
-      btn.style.cssText += [
-        ';background: rgba(0,255,229,0.7)',
-        // ';background: transparent',
-        // 'color: var(--text-dim, #607080)',
-        'color: #00',
-        '--aug-border-bg: var(--border, #1a2840)',
-        'opacity: 0.75',
-      ].join(';');
-    }
     return btn;
   }
 }

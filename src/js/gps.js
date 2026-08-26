@@ -123,5 +123,4 @@ export class GpsManager {
   getCurrentPosition() {
     return this.lastPosition;
   }
-
 }

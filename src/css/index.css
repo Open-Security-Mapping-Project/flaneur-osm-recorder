@@ -1,18 +1,18 @@
 /* ── Design tokens ───────────────────────────────────────────────────── */
 :root {
-  --bg:         #070b14;
-  --bg-panel:   #0d1220;
-  --bg-modal:   #0a0f1c;
-  --border:     #1a2840;
-  --accent:     #00ffe5;
+  --bg: #070b14;
+  --bg-panel: #0d1220;
+  --bg-modal: #0a0f1c;
+  --border: #1a2840;
+  --accent: #00ffe5;
   --accent-dim: #00a89a;
-  --accent2:    #ff3c6e;
-  --accent3:    #ffe600;
-  --text:       #c8dce8;
-  --text-dim:   #607080;
-  --warn:       #ff9900;
-  --success:    #00ff88;
-  --error:      #ff3c6e;
+  --accent2: #ff3c6e;
+  --accent3: #ffe600;
+  --text: #c8dce8;
+  --text-dim: #607080;
+  --warn: #ff9900;
+  --success: #00ff88;
+  --error: #ff3c6e;
 
   /* augmented-ui clip vars */
   --aug-border-all: 1px;
@@ -21,9 +21,16 @@
   --aug-br: 12px;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-html, body {
+html,
+body {
   height: 100%;
   width: 100%;
   overflow: hidden;
@@ -82,7 +89,10 @@ html, body {
   transition: color 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
-.icon-btn:hover, .icon-btn:active { color: var(--accent); }
+.icon-btn:hover,
+.icon-btn:active {
+  color: var(--accent);
+}
 
 #btn-export {
   font-family: 'Share Tech Mono', monospace;
@@ -99,7 +109,10 @@ html, body {
   --aug-tl: 6px;
   --aug-br: 6px;
 }
-#btn-export:hover { --aug-border-bg: var(--accent); color: var(--accent); }
+#btn-export:hover {
+  --aug-border-bg: var(--accent);
+  color: var(--accent);
+}
 
 /* GPS button */
 #btn-gps {
@@ -107,13 +120,20 @@ html, body {
 }
 .gps-dot {
   position: absolute;
-  top: 3px; right: 3px;
-  width: 9px; height: 9px;
+  top: 3px;
+  right: 3px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   border: 1.5px solid var(--bg-panel);
 }
-.gps-dot--on  { background: var(--success); box-shadow: 0 0 6px var(--success); }
-.gps-dot--off { background: var(--error); }
+.gps-dot--on {
+  background: var(--success);
+  box-shadow: 0 0 6px var(--success);
+}
+.gps-dot--off {
+  background: var(--error);
+}
 
 /* ── Map ─────────────────────────────────────────────────────────────── */
 #map-wrap {
@@ -129,11 +149,13 @@ html, body {
 
 /* Leaflet attribution dark mode */
 .leaflet-control-attribution {
-  background: rgba(7,11,20,0.75) !important;
+  background: rgba(7, 11, 20, 0.75) !important;
   color: var(--text-dim) !important;
   font-size: 9px !important;
 }
-.leaflet-control-attribution a { color: var(--accent-dim) !important; }
+.leaflet-control-attribution a {
+  color: var(--accent-dim) !important;
+}
 
 /* Map overlay buttons */
 .map-btn {
@@ -150,14 +172,24 @@ html, body {
   font-size: 18px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  --aug-tl: 6px; --aug-br: 6px;
+  --aug-tl: 6px;
+  --aug-br: 6px;
   --aug-border-all: 1px;
   --aug-border-bg: var(--border);
 }
-.map-btn:hover { color: var(--accent); --aug-border-bg: var(--accent-dim); }
+.map-btn:hover {
+  color: var(--accent);
+  --aug-border-bg: var(--accent-dim);
+}
 
-#btn-map-lock { bottom: 80px; right: 10px; }
-#btn-undo     { bottom: 80px; left: 10px; }
+#btn-map-lock {
+  bottom: 80px;
+  right: 10px;
+}
+#btn-undo {
+  bottom: 80px;
+  left: 10px;
+}
 
 /* GPS marker */
 .node-marker {
@@ -166,7 +198,7 @@ html, body {
 }
 .node-marker-icon {
   font-size: 20px;
-  filter: drop-shadow(0 0 4px rgba(0,255,229,0.7));
+  filter: drop-shadow(0 0 4px rgba(0, 255, 229, 0.7));
 }
 
 /* ── Bottom control area ─────────────────────────────────────────────── */
@@ -187,7 +219,9 @@ html, body {
   padding: 6px 8px 4px;
   scrollbar-width: none;
 }
-#mode-tabs::-webkit-scrollbar { display: none; }
+#mode-tabs::-webkit-scrollbar {
+  display: none;
+}
 
 .mode-tab {
   flex-shrink: 0;
@@ -202,16 +236,19 @@ html, body {
   cursor: pointer;
   white-space: nowrap;
   height: 26px;
-  --aug-tl: 5px; --aug-br: 5px;
+  --aug-tl: 5px;
+  --aug-br: 5px;
   --aug-border-all: 1px;
   --aug-border-bg: var(--border);
   transition: color 0.15s;
 }
-.mode-tab:hover { color: var(--text); }
+.mode-tab:hover {
+  color: var(--text);
+}
 .mode-tab--active {
   color: var(--accent);
   --aug-border-bg: var(--accent-dim);
-  background: rgba(0,255,229,0.06);
+  background: rgba(0, 255, 229, 0.06);
 }
 
 /* Preset grid */
@@ -230,28 +267,35 @@ html, body {
   justify-content: center;
   gap: 2px;
   padding: 6px 4px;
-  background: rgba(0,255,229,0.03);
+  background: rgba(0, 255, 229, 0.03);
   border: none;
   color: var(--text);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  --aug-tl: 7px; --aug-br: 7px;
+  --aug-tl: 7px;
+  --aug-br: 7px;
   --aug-border-all: 1px;
   --aug-border-bg: var(--border);
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
   min-height: 56px;
 }
-.preset-btn:hover, .preset-btn:active {
-  background: rgba(0,255,229,0.1);
+.preset-btn:hover,
+.preset-btn:active {
+  background: rgba(0, 255, 229, 0.1);
   --aug-border-bg: var(--accent-dim);
   color: var(--accent);
 }
 .preset-btn:active {
-  background: rgba(0,255,229,0.18);
+  background: rgba(0, 255, 229, 0.18);
 }
 
-.preset-icon  { font-size: 20px; line-height: 1; }
+.preset-icon {
+  font-size: 20px;
+  line-height: 1;
+}
 .preset-label {
   font-family: 'Rajdhani', sans-serif;
   font-size: 10px;
@@ -274,8 +318,12 @@ html, body {
   font-size: 10px;
   color: var(--text-dim);
 }
-#status-coords  { color: var(--accent-dim); }
-#status-accuracy { transition: color 0.3s; }
+#status-coords {
+  color: var(--accent-dim);
+}
+#status-accuracy {
+  transition: color 0.3s;
+}
 #status-node-count {
   color: var(--accent3);
   font-weight: 700;
@@ -289,11 +337,13 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(7,11,20,0.85);
+  background: rgba(7, 11, 20, 0.85);
   backdrop-filter: blur(4px);
   padding: 16px;
 }
-.modal-backdrop[hidden] { display: none; }
+.modal-backdrop[hidden] {
+  display: none;
+}
 
 .modal-box {
   width: 100%;
@@ -302,7 +352,8 @@ html, body {
   overflow-y: auto;
   background: var(--bg-modal);
   padding: 20px;
-  --aug-tl: 14px; --aug-br: 14px;
+  --aug-tl: 14px;
+  --aug-br: 14px;
   --aug-border-all: 1px;
   --aug-border-bg: var(--accent-dim);
 }
@@ -319,8 +370,14 @@ html, body {
   border-bottom: 1px solid var(--border);
 }
 
-.modal-body { font-size: 14px; line-height: 1.6; color: var(--text-dim); }
-.modal-body p { margin-bottom: 10px; }
+.modal-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+.modal-body p {
+  margin-bottom: 10px;
+}
 
 .btn-row {
   display: flex;
@@ -329,7 +386,9 @@ html, body {
   flex-wrap: wrap;
 }
 
-.btn-primary, .btn-secondary, .btn-ghost {
+.btn-primary,
+.btn-secondary,
+.btn-ghost {
   font-family: 'Share Tech Mono', monospace;
   font-size: 12px;
   letter-spacing: 0.1em;
@@ -339,29 +398,38 @@ html, body {
   cursor: pointer;
   flex: 1;
   min-width: 100px;
-  --aug-tl: 7px; --aug-br: 7px;
+  --aug-tl: 7px;
+  --aug-br: 7px;
   --aug-border-all: 1px;
   transition: background 0.15s;
 }
 .btn-primary {
-  background: rgba(0,255,229,0.12);
+  background: rgba(0, 255, 229, 0.12);
   color: var(--accent);
   --aug-border-bg: var(--accent);
 }
-.btn-primary:hover { background: rgba(0,255,229,0.22); }
+.btn-primary:hover {
+  background: rgba(0, 255, 229, 0.22);
+}
 .btn-secondary {
-  background: rgba(255,60,110,0.08);
+  background: rgba(255, 60, 110, 0.08);
   color: var(--accent2);
   --aug-border-bg: var(--accent2);
 }
-.btn-secondary:hover { background: rgba(255,60,110,0.16); }
+.btn-secondary:hover {
+  background: rgba(255, 60, 110, 0.16);
+}
 .btn-ghost {
   background: transparent;
   color: var(--text-dim);
   --aug-border-bg: var(--border);
 }
-.btn-ghost:hover { color: var(--text); --aug-border-bg: var(--text-dim); }
-.btn-primary:disabled, .btn-secondary:disabled {
+.btn-ghost:hover {
+  color: var(--text);
+  --aug-border-bg: var(--text-dim);
+}
+.btn-primary:disabled,
+.btn-secondary:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
@@ -370,28 +438,39 @@ html, body {
 .session-option {
   padding: 12px;
   margin-bottom: 10px;
-  background: rgba(0,255,229,0.03);
-  --aug-tl: 8px; --aug-br: 8px;
+  background: rgba(0, 255, 229, 0.03);
+  --aug-tl: 8px;
+  --aug-br: 8px;
   --aug-border-all: 1px;
   --aug-border-bg: var(--border);
   cursor: pointer;
   transition: background 0.15s;
 }
-.session-option:hover { background: rgba(0,255,229,0.08); --aug-border-bg: var(--accent-dim); }
-.session-option[disabled] { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+.session-option:hover {
+  background: rgba(0, 255, 229, 0.08);
+  --aug-border-bg: var(--accent-dim);
+}
+.session-option[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 .session-option-title {
   font-family: 'Share Tech Mono', monospace;
   font-size: 13px;
   color: var(--accent);
   margin-bottom: 4px;
 }
-.session-option-desc { font-size: 12px; color: var(--text-dim); }
+.session-option-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+}
 
 /* Note modal */
 #note-input {
   width: 100%;
   min-height: 80px;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 10px;
@@ -399,9 +478,13 @@ html, body {
   font-size: 14px;
   resize: vertical;
   margin-top: 10px;
-  --aug-tl: 6px; --aug-br: 6px;
+  --aug-tl: 6px;
+  --aug-br: 6px;
 }
-#note-input:focus { outline: none; border-color: var(--accent-dim); }
+#note-input:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+}
 
 .photo-strip {
   margin-top: 8px;
@@ -416,7 +499,7 @@ html, body {
   line-height: 1.5;
   padding: 8px;
   border-left: 2px solid var(--accent-dim);
-  background: rgba(0,255,229,0.03);
+  background: rgba(0, 255, 229, 0.03);
 }
 
 /* Export modal */
@@ -432,18 +515,26 @@ html, body {
   width: 100%;
   text-align: left;
   color: var(--text);
-  --aug-tl: 8px; --aug-br: 8px;
+  --aug-tl: 8px;
+  --aug-br: 8px;
   --aug-border-all: 1px;
   --aug-border-bg: var(--border);
   transition: background 0.15s;
 }
-.export-option:hover { background: rgba(0,255,229,0.06); --aug-border-bg: var(--accent-dim); }
+.export-option:hover {
+  background: rgba(0, 255, 229, 0.06);
+  --aug-border-bg: var(--accent-dim);
+}
 .export-option-title {
   font-family: 'Share Tech Mono', monospace;
   font-size: 13px;
   color: var(--accent);
 }
-.export-option-desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+.export-option-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
 
 /* Settings panel (slide-in from left) */
 #panel-settings {
@@ -452,11 +543,13 @@ html, body {
   z-index: 900;
   display: flex;
 }
-#panel-settings[hidden] { display: none; }
+#panel-settings[hidden] {
+  display: none;
+}
 
 .settings-backdrop {
   flex: 1;
-  background: rgba(7,11,20,0.7);
+  background: rgba(7, 11, 20, 0.7);
 }
 
 .settings-content {
@@ -503,9 +596,13 @@ html, body {
   font-family: 'Rajdhani', sans-serif;
   font-size: 14px;
   width: 100%;
-  --aug-tl: 5px; --aug-br: 5px;
+  --aug-tl: 5px;
+  --aug-br: 5px;
 }
-.settings-select:focus { outline: none; border-color: var(--accent-dim); }
+.settings-select:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+}
 
 .settings-input {
   background: var(--bg);
@@ -515,9 +612,13 @@ html, body {
   font-family: 'Share Tech Mono', monospace;
   font-size: 13px;
   width: 100%;
-  --aug-tl: 5px; --aug-br: 5px;
+  --aug-tl: 5px;
+  --aug-br: 5px;
 }
-.settings-input:focus { outline: none; border-color: var(--accent-dim); }
+.settings-input:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+}
 
 .settings-divider {
   border: none;
@@ -531,7 +632,10 @@ html, body {
   color: var(--text-dim);
   line-height: 1.7;
 }
-.settings-info a { color: var(--accent-dim); text-decoration: none; }
+.settings-info a {
+  color: var(--accent-dim);
+  text-decoration: none;
+}
 
 /* Tutorial modal */
 .tutorial-progress {
@@ -567,21 +671,41 @@ html, body {
   background: var(--bg-modal);
   border: 1px solid var(--border);
   color: var(--text);
-  white-space: nowrap;
+  /* Must wrap: messages like the GPS battery warning overflow a phone
+     viewport on one line. */
+  max-width: min(90vw, 380px);
+  white-space: normal;
+  overflow-wrap: break-word;
+  text-align: center;
+  line-height: 1.45;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s, transform 0.2s;
-  --aug-tl: 6px; --aug-br: 6px;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  --aug-tl: 6px;
+  --aug-br: 6px;
 }
 #toast.toast--visible {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-#toast.toast--success { border-color: var(--success); color: var(--success); }
-#toast.toast--error   { border-color: var(--error);   color: var(--error);   }
-#toast.toast--warn    { border-color: var(--warn);    color: var(--warn);    }
-#toast.toast--info    { border-color: var(--accent-dim); color: var(--accent); }
-
+#toast.toast--success {
+  border-color: var(--success);
+  color: var(--success);
+}
+#toast.toast--error {
+  border-color: var(--error);
+  color: var(--error);
+}
+#toast.toast--warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+#toast.toast--info {
+  border-color: var(--accent-dim);
+  color: var(--accent);
+}
 
 /* ... existing code ... */
 
@@ -591,23 +715,31 @@ html, body {
   font-size: 10px;
   letter-spacing: 0.08em;
   color: var(--accent);
-  background: rgba(0,255,229,0.08);
+  background: rgba(0, 255, 229, 0.08);
   border: 1px solid var(--accent-dim);
   padding: 3px 8px;
   white-space: nowrap;
   height: 26px;
   display: flex;
   align-items: center;
-  --aug-tl: 5px; --aug-br: 5px;
+  --aug-tl: 5px;
+  --aug-br: 5px;
   --aug-border-all: 1px;
   --aug-border-bg: var(--accent);
   animation: badge-pulse 2s ease-in-out infinite;
 }
-#direction-badge[hidden] { display: none; }
+#direction-badge[hidden] {
+  display: none;
+}
 
 @keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 0 4px rgba(0,255,229,0.2); }
-  50%       { box-shadow: 0 0 10px rgba(0,255,229,0.6); }
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(0, 255, 229, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(0, 255, 229, 0.6);
+  }
 }
 
 /* Map crosshair reticle */
@@ -618,8 +750,8 @@ html, body {
   transform: translate(-50%, -50%);
   z-index: 450;
   pointer-events: none;
-  display: none;
-  filter: drop-shadow(0 0 4px rgba(255,60,110,0.6));
+  display: block;
+  filter: drop-shadow(0 0 4px rgba(255, 60, 110, 0.6));
 }
 
 /* Direction map overlay button */
@@ -629,11 +761,22 @@ html, body {
   color: var(--accent);
   z-index: 650; /* Higher than direction widget overlay (600) */
 }
-#btn-direction:hover { color: var(--accent); --aug-border-bg: var(--accent); }
-#btn-placement-mode { bottom: 188px; right: 10px; color: var(--accent); }
-#btn-placement-mode:hover { --aug-border-bg: var(--accent2); }
-#btn-undo     { bottom: 80px; left: 10px; }
-
+#btn-direction:hover {
+  color: var(--accent);
+  --aug-border-bg: var(--accent);
+}
+#btn-placement-mode {
+  bottom: 188px;
+  right: 10px;
+  color: var(--accent);
+}
+#btn-placement-mode:hover {
+  --aug-border-bg: var(--accent2);
+}
+#btn-undo {
+  bottom: 80px;
+  left: 10px;
+}
 
 /* Direction row in note modal */
 .direction-row {
@@ -642,9 +785,10 @@ html, body {
   gap: 8px;
   margin-top: 10px;
   padding: 8px 10px;
-  background: rgba(0,255,229,0.04);
+  background: rgba(0, 255, 229, 0.04);
   border: 1px solid var(--border);
-  --aug-tl: 5px; --aug-br: 5px;
+  --aug-tl: 5px;
+  --aug-br: 5px;
 }
 .direction-row-label {
   font-family: 'Share Tech Mono', monospace;
@@ -676,7 +820,7 @@ html, body {
   transform-origin: bottom center;
   font-size: 12px;
   color: var(--accent, #00ffe5);
-  text-shadow: 0 0 4px rgba(0,255,229,0.8);
+  text-shadow: 0 0 4px rgba(0, 255, 229, 0.8);
   pointer-events: none;
   margin-left: -6px;
 }
@@ -690,13 +834,19 @@ html, body {
   cursor: pointer;
   padding: 0 2px;
   line-height: 1;
-  transition: color 0.15s, transform 0.15s;
+  transition:
+    color 0.15s,
+    transform 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
-.statusbar-list-btn:hover { color: var(--accent); transform: translateY(-1px); }
+.statusbar-list-btn:hover {
+  color: var(--accent);
+  transform: translateY(-1px);
+}
 
 /* ── Node list panel (bottom sheet) ─────────────────────────────── */
-#panel-nodelist { /* keep it above 1000 z-index for other buttons. */
+#panel-nodelist {
+  /* keep it above 1000 z-index for other buttons. */
   position: fixed;
   inset: 0;
   z-index: 1010;
@@ -704,11 +854,13 @@ html, body {
   flex-direction: column;
   justify-content: flex-end;
 }
-#panel-nodelist[hidden] { display: none; }
+#panel-nodelist[hidden] {
+  display: none;
+}
 
 .nodelist-backdrop {
   flex: 1;
-  background: rgba(7,11,20,0.65);
+  background: rgba(7, 11, 20, 0.65);
   cursor: pointer;
 }
 
@@ -746,9 +898,9 @@ html, body {
 .nodelist-count-badge {
   font-size: 10px;
   color: var(--accent3);
-  background: rgba(255,230,0,0.1);
+  background: rgba(255, 230, 0, 0.1);
   padding: 2px 7px;
-  border: 1px solid rgba(255,230,0,0.3);
+  border: 1px solid rgba(255, 230, 0, 0.3);
 }
 
 .nodelist-items {
@@ -767,12 +919,16 @@ html, body {
 
 .nodelist-row {
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(26,40,64,0.6);
+  border-bottom: 1px solid rgba(26, 40, 64, 0.6);
   cursor: pointer;
   transition: background 0.12s;
 }
-.nodelist-row:hover { background: rgba(0,255,229,0.04); }
-.nodelist-row:last-child { border-bottom: none; }
+.nodelist-row:hover {
+  background: rgba(0, 255, 229, 0.04);
+}
+.nodelist-row:last-child {
+  border-bottom: none;
+}
 
 .nodelist-row-header {
   display: flex;
@@ -780,7 +936,10 @@ html, body {
   gap: 10px;
 }
 
-.nodelist-icon { font-size: 20px; flex-shrink: 0; }
+.nodelist-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
 
 .nodelist-meta {
   flex: 1;
@@ -835,14 +994,21 @@ html, body {
   font-size: 14px;
   cursor: pointer;
   color: var(--text-dim);
-  --aug-tl: 5px; --aug-br: 5px;
+  --aug-tl: 5px;
+  --aug-br: 5px;
   --aug-border-all: 1px;
   --aug-border-bg: var(--border);
   transition: color 0.12s;
   -webkit-tap-highlight-color: transparent;
 }
-.nodelist-btn-edit:hover  { color: var(--accent);  --aug-border-bg: var(--accent-dim); }
-.nodelist-btn-delete:hover { color: var(--accent2); --aug-border-bg: var(--accent2); }
+.nodelist-btn-edit:hover {
+  color: var(--accent);
+  --aug-border-bg: var(--accent-dim);
+}
+.nodelist-btn-delete:hover {
+  color: var(--accent2);
+  --aug-border-bg: var(--accent2);
+}
 
 /* ── Node edit modal ─────────────────────────────────────────────── */
 .nodeedit-section-label {
@@ -864,11 +1030,14 @@ html, body {
   font-family: 'Share Tech Mono', monospace;
   font-size: 10px;
   color: var(--text);
-  background: rgba(0,255,229,0.06);
+  background: rgba(0, 255, 229, 0.06);
   border: 1px solid var(--border);
   padding: 2px 7px;
 }
-.nodeedit-tag b { color: var(--accent-dim); font-weight: normal; }
+.nodeedit-tag b {
+  color: var(--accent-dim);
+  font-weight: normal;
+}
 
 .nodeedit-coords {
   font-family: 'Share Tech Mono', monospace;
@@ -879,7 +1048,7 @@ html, body {
 .nodeedit-textarea {
   width: 100%;
   min-height: 70px;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border);
   color: var(--text);
   padding: 8px 10px;
@@ -888,12 +1057,211 @@ html, body {
   resize: vertical;
   margin-top: 4px;
 }
-.nodeedit-textarea:focus { outline: none; border-color: var(--accent-dim); }
+.nodeedit-textarea:focus {
+  outline: none;
+  border-color: var(--accent-dim);
+}
 
 /* narrow delete confirm modal */
-.modal-box--narrow { max-width: 320px; }
+.modal-box--narrow {
+  max-width: 320px;
+}
 
 /* Scrollbar styling */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+/* ── Crosshair visibility ────────────────────────────────────────────── */
+#map-crosshair[hidden] {
+  display: none;
+}
+
+/* ── Storage failure banner ──────────────────────────────────────────── */
+.storage-banner {
+  padding: 7px 12px;
+  background: rgba(255, 60, 110, 0.12);
+  border-bottom: 1px solid var(--error);
+  color: var(--error);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+.storage-banner[hidden] {
+  display: none;
+}
+
+/* ── Storage health panel (settings) ─────────────────────────────────── */
+.storage-panel {
+  --aug-border-bg: var(--border);
+  padding: 10px 12px;
+  background: rgba(0, 255, 229, 0.03);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+}
+.storage-panel-title {
+  color: var(--accent);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.storage-stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 0;
+  color: var(--text-dim);
+}
+.storage-stat-value {
+  color: var(--text);
+}
+
+.storage-state {
+  margin-top: 8px;
+  padding: 6px 8px;
+  border-left: 2px solid var(--text-dim);
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+.storage-state--good {
+  border-left-color: var(--success);
+  color: var(--success);
+}
+.storage-state--warn {
+  border-left-color: var(--warn);
+  color: var(--warn);
+}
+.storage-state--bad {
+  border-left-color: var(--error);
+  color: var(--error);
+}
+
+.storage-explainer {
+  margin-top: 8px;
+  color: var(--text-dim);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* ── Preset grid readiness ───────────────────────────────────────────── */
+.preset-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.preset-grid--waiting {
+  position: relative;
+}
+
+/* ── Note modal direction value ──────────────────────────────────────── */
+.direction-row-value--set {
+  color: var(--accent);
+}
+
+/* ── Status bar accuracy warning ─────────────────────────────────────── */
+.status-accuracy--poor {
+  color: var(--warn);
+}
+
+/* ── Placement mode button state ─────────────────────────────────────── */
+.map-btn--placement {
+  color: var(--accent);
+}
+.map-btn--placement-manual {
+  color: var(--accent2);
+}
+
+/* ── Layout utilities (replacing former inline styles) ───────────────── */
+.visually-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.btn-row--attach {
+  margin-top: 10px;
+  margin-bottom: 0;
+}
+.btn-block {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.export-session-line {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--accent3);
+  margin-bottom: 14px;
+}
+.photo-workflow-hint--spaced {
+  margin-top: 12px;
+}
+.nodeedit-section-label--spaced {
+  margin-top: 12px;
+}
+.settings-row--field {
+  margin-bottom: 10px;
+}
+
+.modal-title--danger {
+  color: var(--accent2);
+}
+.modal-hint {
+  margin-bottom: 12px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+.modal-caution {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+/* ── Session modal: about / attribution line ─────────────────────────── */
+.session-about {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--text-dim);
+  text-align: center;
+}
+.session-about a {
+  color: var(--accent-dim);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent-dim);
+}
+.session-about a:hover,
+.session-about a:active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── "Go" button: the final, affirmative action ──────────────────────── */
+/* Declared after .btn-primary so it wins the cascade when both are set. */
+.btn-go {
+  background: rgba(0, 255, 136, 0.16);
+  color: var(--success);
+  --aug-border-bg: var(--success);
+}
+.btn-go:hover,
+.btn-go:active {
+  background: rgba(0, 255, 136, 0.28);
+}
+
+/* A hidden button in a flex row must not hold its slot. */
+.btn-row [hidden] {
+  display: none;
+}

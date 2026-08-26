@@ -76,9 +76,7 @@ export function toGpx(session) {
     lines.push(`    <time>${node.timestamp}</time>`);
     lines.push(`    <name>${escXml(tagStr.split(';')[0])}</name>`);
 
-    const desc = [tagStr, node.note ? `note: ${node.note}` : '']
-      .filter(Boolean)
-      .join(' | ');
+    const desc = [tagStr, node.note ? `note: ${node.note}` : ''].filter(Boolean).join(' | ');
     lines.push(`    <cmt>${escXml(desc)}</cmt>`);
     lines.push(`    <desc>${escXml(desc)}</desc>`);
     lines.push('  </wpt>');
@@ -95,10 +93,7 @@ export function toGeoJson(session) {
     type: 'Feature',
     geometry: {
       type: 'Point',
-      coordinates: [
-        parseFloat(node.lon.toFixed(7)),
-        parseFloat(node.lat.toFixed(7)),
-      ],
+      coordinates: [parseFloat(node.lon.toFixed(7)), parseFloat(node.lat.toFixed(7))],
     },
     properties: {
       ...node.tags,
@@ -130,7 +125,7 @@ export function downloadText(content, filename, mimeType) {
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
-  a.style.display = 'none';
+  a.className = 'visually-hidden-input';
   document.body.appendChild(a);
   a.click();
   setTimeout(() => {

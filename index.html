@@ -9,7 +9,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Flaneur" />
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <!-- The manifest link is injected at build time by vite-plugin-pwa. -->
   <title>Flaneur OSM Recorder</title>
 
   <!-- Leaflet CSS loaded by JS module -->
@@ -41,16 +42,20 @@
       data-i18n="exportData">Export</button>
   </header>
 
+  <!-- Storage failure banner — only shown when writes are being rejected -->
+  <div id="storage-banner" class="storage-banner" role="alert" hidden></div>
+
   <!-- ── Map ────────────────────────────────────────────────────── -->
   <div id="map-wrap">
     <div id="map"></div>
     <button id="btn-map-lock" class="map-btn" augmented-ui="tl-clip br-clip exe"
-      title="Lock map to GPS">🔒</button>
+      data-i18n-title="mapLocked" title="Map locked to GPS">🔒</button>
     <!-- Map overlay buttons -->
     <button id="btn-direction" class="map-btn map-btn--direction" augmented-ui="tl-clip br-clip exe"
-            title="Set direction" aria-label="Set direction">⬆</button>
+            data-i18n-title="directionLabel" title="Direction" aria-label="Set direction">⬆</button>
     <button id="btn-placement-mode" class="map-btn map-btn--placement" augmented-ui="tl-clip br-clip exe"
-            title="GPS mode: place at current location" aria-label="Toggle placement mode">📍</button>
+            data-i18n-title="placementGps" title="GPS mode: place at current location"
+            aria-label="Toggle placement mode">📍</button>
     <button id="btn-undo" class="map-btn" augmented-ui="tl-clip br-clip exe"
             data-i18n-title="nodeUndo" title="Undo last">↩</button>
 
@@ -88,6 +93,25 @@
       <div class="session-option-title" data-i18n="sessionAppend">Append to Last Session</div>
       <div class="session-option-desc" id="session-append-info" data-i18n="sessionNoExisting">No previous session found.</div>
     </button>
+
+    <button id="btn-session-tutorial" class="session-option" augmented-ui="tl-clip br-clip exe">
+      <div class="session-option-title" data-i18n="sessionTutorial">Show Tutorial [?]</div>
+      <div class="session-option-desc" data-i18n="sessionTutorialDesc">Helpful messages</div>
+    </button>
+
+    <!--
+      Split across spans so the two links can sit inline: applyAllStrings()
+      assigns textContent, which would strip any markup held in a single key.
+    -->
+    <p class="session-about">
+      <span data-i18n="sessionAboutIntro">Flaneur is an</span>
+      <a href="https://github.com/Open-Security-Mapping-Project" target="_blank" rel="noopener">Open
+        Security Mapping Project</a>
+      <span data-i18n="sessionAboutApp">web app. It is</span>
+      <a href="https://github.com/Open-Security-Mapping-Project/flaneur-osm-recorder"
+         target="_blank" rel="noopener" data-i18n="sessionAboutOpenSource">open source</a>
+      <span data-i18n="sessionAboutLicense">/ GPLv3.0.</span>
+    </p>
   </div>
 </div>
 
@@ -106,17 +130,17 @@
 
       <!-- Direction row -->
       <div class="direction-row">
-        <span class="direction-row-label">Direction</span>
-        <span id="note-direction-display" class="direction-row-value">Not set</span>
+        <span class="direction-row-label" data-i18n="directionLabel">Direction</span>
+        <span id="note-direction-display" class="direction-row-value" data-i18n="directionNotSet">Not set</span>
         <button id="btn-set-direction" class="btn-ghost btn-sm" augmented-ui="tl-clip br-clip exe">⬆ Set</button>
         <button id="btn-clear-direction" class="btn-ghost btn-sm" augmented-ui="tl-clip br-clip exe">✕</button>
       </div>
 
-      <div class="btn-row" style="margin-top: 10px; margin-bottom: 0;">
+      <div class="btn-row btn-row--attach">
         <button id="btn-attach-photo" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
           data-i18n="photoAttach">Attach Photo</button>
-        <input type="file" id="photo-file-input" accept="image/*" capture="environment"
-          multiple style="display:none" />
+        <input type="file" id="photo-file-input" class="visually-hidden-input"
+          accept="image/*" capture="environment" multiple />
       </div>
       <div id="photo-count" class="photo-strip"></div>
 
@@ -136,9 +160,7 @@
   <div class="modal-box" augmented-ui="tl-clip br-clip exe">
     <div class="modal-title" data-i18n="exportModalTitle">Export Session</div>
     <div class="modal-body">
-      <p style="font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--accent3); margin-bottom: 14px;">
-        <span id="export-session-info"></span>
-      </p>
+      <p class="export-session-line"><span id="export-session-info"></span></p>
 
       <button id="btn-export-osm" class="export-option" augmented-ui="tl-clip br-clip exe">
         <span class="export-option-title" data-i18n="exportOsmXml">JOSM / OSM XML</span>
@@ -155,11 +177,11 @@
         <span class="export-option-desc" data-i18n="exportGeoJsonHint">For use in GIS tools, QGIS, etc.</span>
       </button>
 
-      <p class="photo-workflow-hint" data-i18n="exportPhotoNote" style="margin-top:12px;"></p>
+      <p class="photo-workflow-hint photo-workflow-hint--spaced" data-i18n="exportPhotoNote"></p>
     </div>
     <div class="btn-row">
       <button id="btn-export-close" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
-        data-i18n="noteModalCancel">Close</button>
+        data-i18n="actionClose">Close</button>
     </div>
   </div>
 </div>
@@ -173,13 +195,14 @@
     <div class="btn-row">
       <button id="btn-tut-skip" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
         data-i18n="tutorialSkip">Skip</button>
-      <button id="btn-tut-next" class="btn-primary" augmented-ui="tl-clip br-clip exe"
-        data-i18n="tutorialNext">Next</button>
+      <!-- Label and green "go" state are set by renderTutorialSlide(), so no
+           data-i18n here — applyAllStrings() would overwrite "Start Surveying"
+           back to "Next" on a locale change. -->
+      <button id="btn-tut-next" class="btn-primary" augmented-ui="tl-clip br-clip exe">Next</button>
     </div>
   </div>
 </div>
 
-<!-- ── Settings Panel ─────────────────────────────────────────────── -->
 <!-- ── Settings Panel ─────────────────────────────────────────────── -->
 <div id="panel-settings" hidden role="dialog" aria-modal="true">
   <div class="settings-content">
@@ -192,16 +215,14 @@
 
     <hr class="settings-divider" />
 
-    <button id="btn-settings-location" class="btn-ghost" augmented-ui="tl-clip br-clip exe">
-      🗺️ Set Map Location
-    </button>
+    <button id="btn-settings-location" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+            data-i18n="settingsLocation">Set Map Location</button>
 
     <button id="btn-settings-tutorial" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
             data-i18n="settingsTutorial">Show Tutorial</button>
 
-    <button id="btn-open-nodelist" class="btn-ghost" augmented-ui="tl-clip br-clip exe">
-      ✏ Edit Saved Items
-    </button>
+    <button id="btn-open-nodelist" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+            data-i18n="settingsEditNodes">Edit Saved Items</button>
 
     <button id="btn-settings-export" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
             data-i18n="settingsDownload">Export Data</button>
@@ -210,19 +231,46 @@
             data-i18n="settingsClearStorage">Clear All Sessions</button>
 
     <hr class="settings-divider" />
+
+    <!-- ── Storage health ──────────────────────────────────────── -->
+    <div class="storage-panel" augmented-ui="tl-clip br-clip exe">
+      <div class="storage-panel-title" data-i18n="storageTitle">Storage on this device</div>
+
+      <div class="storage-stat">
+        <span class="storage-stat-label" data-i18n="storageSessionsLabel">Saved</span>
+        <span class="storage-stat-value" id="storage-sessions">—</span>
+      </div>
+      <div class="storage-stat">
+        <span class="storage-stat-label" data-i18n="storageUsedLabel">Survey data</span>
+        <span class="storage-stat-value" id="storage-used">—</span>
+      </div>
+      <div class="storage-stat">
+        <span class="storage-stat-label" data-i18n="storageQuotaLabel">Space available</span>
+        <span class="storage-stat-value" id="storage-quota">—</span>
+      </div>
+
+      <div class="storage-state" id="storage-persisted">—</div>
+      <p class="storage-explainer" data-i18n="storageExplainer"></p>
+    </div>
+
+    <hr class="settings-divider" />
     <div class="settings-info">
       <div data-i18n="settingsAbout"></div>
       <br />
-      <div>Storage used: <span id="storage-used">—</span></div>
-      <br />
       <div>
         <span data-i18n="settingsLicense">GPL-3.0</span><br />
-        <a href="https://github.com/flaneur-osm/flaneur-osm-recorder" target="_blank" rel="noopener">
-          github.com/flaneur-osm
-        </a><br />
+        <a href="https://github.com/Open-Security-Mapping-Project/flaneur-osm-recorder"
+           target="_blank" rel="noopener">
+          github.com/Open-Security-Mapping-Project
+        </a>
+        <!--
+          GitLab mirror is not currently published. Restore this block if and
+          when the mirror goes live.
+        <br />
         <a href="https://gitlab.com/flaneur-osm/flaneur-osm-recorder" target="_blank" rel="noopener">
           gitlab.com/flaneur-osm
         </a>
+        -->
       </div>
     </div>
   </div>
@@ -237,10 +285,10 @@
   <div class="nodelist-sheet">
     <div class="nodelist-header">
       <div class="nodelist-title">
-        <span>Saved Items</span>
+        <span data-i18n="nodeListTitle">Saved Items</span>
         <span id="nodelist-count" class="nodelist-count-badge"></span>
       </div>
-      <button class="icon-btn" id="btn-nodelist-close-x" onclick="document.getElementById('panel-nodelist').setAttribute('hidden','')">✕</button>
+      <button class="icon-btn" id="btn-nodelist-close-x" aria-label="Close">✕</button>
     </div>
     <div id="nodelist-items" class="nodelist-items"></div>
   </div>
@@ -249,24 +297,26 @@
 <!-- ── Node Edit Modal ─────────────────────────────────────────────────── -->
 <div id="modal-nodeedit" class="modal-backdrop" hidden role="dialog" aria-modal="true">
   <div class="modal-box" augmented-ui="tl-clip br-clip exe">
-    <div class="modal-title">Edit Node</div>
+    <div class="modal-title" data-i18n="nodeEditModalTitle">Edit Node</div>
     <div class="modal-body">
-      <div class="nodeedit-section-label">Tags (edit in JOSM)</div>
+      <div class="nodeedit-section-label" data-i18n="nodeEditTagsLabel">Tags (edit in JOSM)</div>
       <div id="nodeedit-tags" class="nodeedit-tags"></div>
 
-      <div class="nodeedit-section-label" style="margin-top:12px;">Coordinates</div>
+      <div class="nodeedit-section-label nodeedit-section-label--spaced" data-i18n="nodeEditCoordsLabel">Coordinates</div>
       <div id="nodeedit-coords" class="nodeedit-coords"></div>
 
-      <div class="nodeedit-section-label" style="margin-top:12px;">Recorded</div>
+      <div class="nodeedit-section-label nodeedit-section-label--spaced" data-i18n="nodeEditRecordedLabel">Recorded</div>
       <div id="nodeedit-time" class="nodeedit-coords"></div>
 
-      <div class="nodeedit-section-label" style="margin-top:12px;">Note</div>
+      <div class="nodeedit-section-label nodeedit-section-label--spaced" data-i18n="nodeEditNoteLabel">Note</div>
       <textarea id="nodeedit-note" class="nodeedit-textarea" augmented-ui="tl-clip br-clip exe"
-        placeholder="Add or edit note…" rows="3"></textarea>
+        data-i18n-placeholder="nodeEditNotePlaceholder" placeholder="Add or edit note…" rows="3"></textarea>
     </div>
     <div class="btn-row">
-      <button id="btn-nodeedit-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe">Cancel</button>
-      <button id="btn-nodeedit-save" class="btn-primary" augmented-ui="tl-clip br-clip exe">Save Note</button>
+      <button id="btn-nodeedit-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+              data-i18n="actionCancel">Cancel</button>
+      <button id="btn-nodeedit-save" class="btn-primary" augmented-ui="tl-clip br-clip exe"
+              data-i18n="actionSave">Save</button>
     </div>
   </div>
 </div>
@@ -275,14 +325,16 @@
 <!-- ── Node Delete Confirm Modal ──────────────────────────────────────── -->
 <div id="modal-nodedelete" class="modal-backdrop" hidden role="dialog" aria-modal="true">
   <div class="modal-box modal-box--narrow" augmented-ui="tl-clip br-clip exe">
-    <div class="modal-title" style="color: var(--accent2);">Delete Node?</div>
+    <div class="modal-title modal-title--danger" data-i18n="nodeDeleteModalTitle">Delete Node?</div>
     <div class="modal-body">
-      <p>Permanently delete <strong id="nodedelete-label"></strong>?</p>
-      <p style="color: var(--text-dim); font-size: 13px; margin-top: 6px;">This cannot be undone.</p>
+      <p><strong id="nodedelete-label"></strong></p>
+      <p class="modal-caution" data-i18n="nodeDeleteWarning">This cannot be undone.</p>
     </div>
     <div class="btn-row">
-      <button id="btn-nodedelete-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe">Cancel</button>
-      <button id="btn-nodedelete-confirm" class="btn-secondary" augmented-ui="tl-clip br-clip exe">Delete</button>
+      <button id="btn-nodedelete-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+              data-i18n="actionCancel">Cancel</button>
+      <button id="btn-nodedelete-confirm" class="btn-secondary" augmented-ui="tl-clip br-clip exe"
+              data-i18n="actionDelete">Delete</button>
     </div>
   </div>
 </div>
@@ -290,36 +342,34 @@
 <!-- ── Manual Location Modal ──────────────────────────────────────── -->
 <div id="modal-manual-location" class="modal-backdrop" hidden role="dialog" aria-modal="true">
   <div class="modal-box" augmented-ui="tl-clip br-clip exe">
-    <div class="modal-title">Set Map Location</div>
+    <div class="modal-title" data-i18n="manualLocationTitle">Set Map Location</div>
     <div class="modal-body">
-      <p style="margin-bottom: 12px; color: var(--text-dim); font-size: 13px;">
+      <p class="modal-hint" data-i18n="manualLocationHint">
         Enter coordinates to navigate the map. Useful when GPS is unavailable.
       </p>
 
-      <div class="settings-row" style="margin-bottom: 10px;">
-        <label class="settings-label">Latitude (-90 to 90)</label>
-        <input type="text" id="manual-lat" class="settings-input" augmented-ui="tl-clip br-clip exe"
-               placeholder="e.g. 51.505" />
+      <div class="settings-row settings-row--field">
+        <label class="settings-label" for="manual-lat" data-i18n="manualLocationLat">Latitude (-90 to 90)</label>
+        <input type="text" inputmode="decimal" id="manual-lat" class="settings-input"
+               augmented-ui="tl-clip br-clip exe" placeholder="e.g. 40.712772" />
       </div>
 
-      <div class="settings-row" style="margin-bottom: 10px;">
-        <label class="settings-label">Longitude (-180 to 180)</label>
-        <input type="text" id="manual-lon" class="settings-input" augmented-ui="tl-clip br-clip exe"
-               placeholder="e.g. -0.09" />
+      <div class="settings-row settings-row--field">
+        <label class="settings-label" for="manual-lon" data-i18n="manualLocationLon">Longitude (-180 to 180)</label>
+        <input type="text" inputmode="decimal" id="manual-lon" class="settings-input"
+               augmented-ui="tl-clip br-clip exe" placeholder="e.g. -74.006058" />
       </div>
 
-      <button id="btn-use-current-view" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
-              style="width: 100%; margin-top: 8px; font-size: 11px;">
-        Use Current Map Center
-      </button>
+      <button id="btn-use-current-view" class="btn-ghost btn-block" augmented-ui="tl-clip br-clip exe"
+              data-i18n="manualLocationUseView">Use Current Map Centre</button>
 
-      <p class="photo-workflow-hint" style="margin-top: 12px;">
-        After setting location, use crosshair mode (⊕) to place nodes by panning the map.
-      </p>
+      <p class="photo-workflow-hint photo-workflow-hint--spaced" data-i18n="manualLocationFooter"></p>
     </div>
     <div class="btn-row">
-      <button id="btn-manual-location-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe">Cancel</button>
-      <button id="btn-manual-location-set" class="btn-primary" augmented-ui="tl-clip br-clip exe">Set Location</button>
+      <button id="btn-manual-location-cancel" class="btn-ghost" augmented-ui="tl-clip br-clip exe"
+              data-i18n="actionCancel">Cancel</button>
+      <button id="btn-manual-location-set" class="btn-primary" augmented-ui="tl-clip br-clip exe"
+              data-i18n="manualLocationTitle">Set Location</button>
     </div>
   </div>
 </div>

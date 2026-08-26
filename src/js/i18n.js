@@ -26,6 +26,7 @@ const strings = {
     gpsOn: 'GPS Active',
     gpsOff: 'GPS Off',
     gpsBatteryWarning: 'GPS is still active — disable it when not surveying to save battery.',
+    gpsTrackingActive: 'GPS tracking active.',
 
     // Session management (launch modal)
     sessionModalTitle: 'Session',
@@ -35,6 +36,14 @@ const strings = {
     sessionAppendLabel: 'Continue adding to your previous session',
     sessionLastInfo: 'Last session: {count} nodes on {date}',
     sessionNoExisting: 'No previous session found.',
+    sessionResumed: 'Resumed your last session — {count} nodes still saved.',
+    sessionTutorial: 'Show Tutorial [?]',
+    sessionTutorialDesc: 'Helpful messages',
+    // Assembled inline around two links — see the session modal in index.html.
+    sessionAboutIntro: 'Flaneur is an',
+    sessionAboutApp: 'web app. It is',
+    sessionAboutOpenSource: 'open source',
+    sessionAboutLicense: '/ GPLv3.0.',
 
     // Map
     mapLocating: 'Locating…',
@@ -55,7 +64,52 @@ const strings = {
     photoAttach: 'Attach Photo',
     photoTake: 'Take Photo',
     photoAttached: '{count} photo(s) attached',
-    photoWorkflowHint: 'Photos will be included in export. Upload to Wikimedia Commons or Mapillary, then add the URL as a tag in JOSM.',
+    photoWorkflowHint:
+      'Photos will be included in export. Upload to Wikimedia Commons or Mapillary, then add the URL as a tag in JOSM.',
+    nodeUndone: 'Undone',
+    nodeDeleted: 'Node deleted',
+    nodeNoteUpdated: 'Note updated',
+    nodeGeneric: 'Node',
+    nodeNoTags: '(no tags)',
+    nodeEditTitle: 'Edit note',
+    nodeDeleteTitle: 'Delete node',
+    nodeListEmpty: 'No nodes recorded yet in this session.',
+    waitingForGps: 'Waiting for GPS fix — or switch to crosshair mode (⊕)',
+
+    // Direction
+    directionLabel: 'Direction',
+    directionSet: 'Direction: {deg}° {cardinal}',
+    directionNotSet: 'Not set',
+    directionCleared: 'Direction cleared.',
+    summaryNote: 'note',
+
+    // Placement mode
+    placementGps: 'GPS mode: place at current location',
+    placementCrosshair: 'Crosshair mode: place at map centre',
+    placementManualSuffix: '(manual)',
+
+    // Manual location
+    manualLocationSet: 'Map centred at {lat}, {lon}. Use crosshair mode to place nodes.',
+
+    // Storage
+    storageTitle: 'Storage on this device',
+    storageUsedLabel: 'Survey data',
+    storageQuotaLabel: 'Space available',
+    storageSessionsLabel: 'Saved',
+    storageStateLabel: 'Durability',
+    storageSessionSummary: '{sessions} sessions · {nodes} nodes',
+    storageUnknown: 'unknown',
+    storageStatePersisted: 'Protected — the browser will not evict this data.',
+    storageStateBestEffort:
+      'Best effort — data can be cleared if the device runs out of space. Export regularly.',
+    storageStateBlocked: 'NOT SAVING — this browser is blocking local storage.',
+    storageUnavailable:
+      'Local storage is blocked, so nothing can be saved. Leave private/incognito mode or allow site data for this page.',
+    storageFullError:
+      'Storage is full — that point was NOT saved. Export this session, then clear old sessions.',
+    storageWriteError: 'Could not save to local storage — that point was NOT saved.',
+    storageExplainer:
+      'All survey data is stored only in this browser, on this device. It is never uploaded. Clearing browser site data, or uninstalling the app, deletes it — export before you do either.',
 
     // Collection modes
     modeLabel: 'Mode',
@@ -170,34 +224,68 @@ const strings = {
     settingsLanguage: 'Language',
     settingsAbout: 'About',
     settingsVersion: 'Version {version}',
-    settingsLicense: 'GPL-3.0 — Source on GitHub / GitLab',
+    settingsLicense: 'GPL-3.0 — Source on GitHub',
 
     // About
-    aboutText: 'Flaneur OSM Recorder is a free, open-source field survey tool. Data never leaves your device. Export to JOSM for review before contributing to OpenStreetMap.',
+    aboutText:
+      'Flaneur OSM Recorder is a free, open-source field survey tool. Data never leaves your device. Export to JOSM for review before contributing to OpenStreetMap.',
 
     // Tutorial slides
     tutorialSkip: 'Skip',
     tutorialNext: 'Next',
     tutorialDone: 'Start Surveying',
     tutorialSlide1Title: 'Welcome to Flaneur',
-    tutorialSlide1Body: 'A field recorder for mapping the world around you. All data stays on your device — nothing is sent anywhere without your review.',
+    tutorialSlide1Body:
+      'A field recorder for mapping the world around you. All data stays on your device — nothing is sent anywhere without your review.',
     tutorialSlide2Title: 'GPS & the Map',
-    tutorialSlide2Body: 'Tap the GPS button (top right) to enable location. A green dot means active. The map zooms to your position. Tap the crosshair to re-center.',
+    tutorialSlide2Body:
+      'Tap the GPS button (top right) to enable location. A green dot means active. The map zooms to your position. Tap the crosshair to re-center.',
     tutorialSlide3Title: 'Recording Nodes',
-    tutorialSlide3Body: 'Tap any preset button to instantly save your current GPS position with OSM tags. Hold the button for 1 second to add a text note before saving.',
+    tutorialSlide3Body:
+      'Tap any preset button to instantly save your current GPS position with OSM tags. Hold the button for 1 second to add a text note before saving.',
     tutorialSlide4Title: 'Collection Modes',
-    tutorialSlide4Body: 'Switch between Urban, Surveillance, Curbs, Bicycle, Amenities, and Power modes. Each mode shows relevant OSM presets for that survey type.',
+    tutorialSlide4Body:
+      'Switch between Urban, Surveillance, Curbs, Bicycle, Amenities, and Power modes. Each mode shows relevant OSM presets for that survey type.',
     tutorialSlide5Title: 'Photos',
-    tutorialSlide5Body: 'Hold any preset and tap the camera icon to attach a photo. Photos stay on your device. For OSM, upload to Mapillary or Wikimedia Commons and link the URL in JOSM.',
+    tutorialSlide5Body:
+      'Hold any preset and tap the camera icon to attach a photo. Photos stay on your device. For OSM, upload to Mapillary or Wikimedia Commons and link the URL in JOSM.',
     tutorialSlide6Title: 'Export to JOSM',
-    tutorialSlide6Body: 'Tap Export → choose OSM XML → send the file to your desktop → open in JOSM with File › Open. Review your nodes, add detail, and upload to OSM when ready.',
+    tutorialSlide6Body:
+      'Tap Export → choose OSM XML → send the file to your desktop → open in JOSM with File › Open. Review your nodes, add detail, and upload to OSM when ready.',
 
     // Errors / warnings
     errorGpsUnavailable: 'GPS not available on this device.',
     errorGpsDenied: 'Location permission denied. Enable in browser settings.',
     errorGpsTimeout: 'GPS timeout — is location enabled?',
+    errorGpsFallback: 'No GPS fix. Pan the map and use crosshair mode (⊕) to place nodes.',
+    errorNoSession: 'No active session — start one first.',
+    errorCoordsInvalid: 'Invalid coordinates. Please enter valid numbers.',
+    errorCoordsRange: 'Coordinates out of range. Lat: -90 to 90, Lon: -180 to 180.',
     warningLowAccuracy: 'Low GPS accuracy (±{meters}m) — find open sky.',
     errorStorageFull: 'Storage full — export and clear old sessions.',
+    settingsCleared: 'All sessions cleared',
+    settingsLocation: 'Set Map Location',
+    settingsEditNodes: 'Edit Saved Items',
+    nodeListTitle: 'Saved Items',
+    nodeEditModalTitle: 'Edit Node',
+    nodeEditTagsLabel: 'Tags (edit in JOSM)',
+    nodeEditCoordsLabel: 'Coordinates',
+    nodeEditRecordedLabel: 'Recorded',
+    nodeEditNoteLabel: 'Note',
+    nodeEditNotePlaceholder: 'Add or edit note…',
+    nodeDeleteModalTitle: 'Delete Node?',
+    nodeDeleteWarning: 'This cannot be undone.',
+    manualLocationTitle: 'Set Map Location',
+    manualLocationHint: 'Enter coordinates to navigate the map. Useful when GPS is unavailable.',
+    manualLocationLat: 'Latitude (-90 to 90)',
+    manualLocationLon: 'Longitude (-180 to 180)',
+    manualLocationUseView: 'Use Current Map Centre',
+    manualLocationFooter:
+      'After setting location, use crosshair mode (⊕) to place nodes by panning the map.',
+    actionSave: 'Save',
+    actionCancel: 'Cancel',
+    actionDelete: 'Delete',
+    actionClose: 'Close',
   },
 
   fr: {

@@ -14,13 +14,13 @@
  */
 
 export const MODES = [
-  { id: 'urban',            labelKey: 'modeUrban' },
-  { id: 'surveillance',     labelKey: 'modeSurveillance' },
+  { id: 'urban', labelKey: 'modeUrban' },
+  { id: 'surveillance', labelKey: 'modeSurveillance' },
   { id: 'surveillance_detail', labelKey: 'modeSurveillanceDetail' },
-  { id: 'curbs',            labelKey: 'modeCurbs' },
-  { id: 'bike',             labelKey: 'modeBike' },
-  { id: 'amenities',        labelKey: 'modeAmenities' },
-  { id: 'power',            labelKey: 'modePower' },
+  { id: 'curbs', labelKey: 'modeCurbs' },
+  { id: 'bike', labelKey: 'modeBike' },
+  { id: 'amenities', labelKey: 'modeAmenities' },
+  { id: 'power', labelKey: 'modePower' },
 ];
 
 export const PRESETS = {
@@ -112,7 +112,12 @@ export const PRESETS = {
       id: 'surv_ptz',
       labelKey: 'presetSurvPTZ',
       icon: '🎥',
-      tags: { man_made: 'surveillance', surveillance: 'outdoor', 'surveillance:type': 'dome', 'camera:mount': 'pole' },
+      tags: {
+        man_made: 'surveillance',
+        surveillance: 'outdoor',
+        'surveillance:type': 'dome',
+        'camera:mount': 'pole',
+      },
     },
     {
       id: 'surv_indoor',
@@ -481,7 +486,11 @@ export const PRESETS = {
       id: 'pow_solar',
       labelKey: 'presetSolarPanel',
       icon: '☀️',
-      tags: { generator: 'source', 'generator:source': 'solar', 'generator:method': 'photovoltaic' },
+      tags: {
+        generator: 'source',
+        'generator:source': 'solar',
+        'generator:method': 'photovoltaic',
+      },
     },
     {
       id: 'pow_wind',
